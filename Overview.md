@@ -1,29 +1,41 @@
 # Report: Overview
 
-**Note** Max 1000 words except diagrams.
+## 1. Purpose
+Log4j utility is an event logging framework for the Java programming language that logs information with different importance levels in order to monitor the operations of an application.
+The primary use of Log4j is to offer flexibility in dealing with the logged messages and sending them to various destinations such as files, consoles, and databases.
+The main objective behind this tool is the facilitation of debugging and behavior analysis of the software applications.
+## 2. Stakeholders
+This initiative complies with the meritocratic governance of the Apache Software Foundation (ASF)
 
-**After the word limit, teachers reserve the right to stop reading, which may affect the teams’ grade**
+### 2.1 Internal Stakeholders & Governance
 
----
+The development is led by the Project Management Committee (PMC), consisting of 13 active members who have power to make determinations ("Binding Votes").
 
-## Table of Contents
+Key Leadership: PMC Chair Piotr P. Karwasz directs administrative governance and issue releases, supported by Gary Gregory, Matt Sicker, and Volkan Yazıcı.
 
-- [Report: Overview](#report-overview)
-  - [Table of Contents](#table-of-contents)
-  - [1. Purpose and Stakeholders](#1-purpose-and-stakeholders)
-  - [2. System Description and Statistics](#2-system-description-and-statistics)
+Technical Core: A small group of 6 "Top Contributors" (including Remko Popma and Ralph Goers) accounts for over 50% of the ~20,000 total commits, focusing on core architecture, performance (LMAX Disruptor), and security.
 
----
+Community: Over 250 developers contribute via GitHub, categorized into:
+- Active (3) [50-300 commits] 
+- Minor (40) [5-50 commits]
+-  Occasional (~200) [1-5 commits].
 
-## 1. Purpose and Stakeholders
+Automation is handled by asf-rm (maintenance) and dependabot (dependency security).
 
-_Write here a brief statement about the purpose of the system and its main stakeholders._
+### 2.2 External Stakeholders
 
-## 2. System Description and Statistics
+Direct Users: Java developers and Systems Architects incorporating Log4j to bolster logging options.
 
-_Write here a brief description of the system and its basic statistics._
+Indirect Users: Transnational companies and software consumers leveraging Log4j (such as Apache Struts, Spring Boot, and Minecraft).
 
-- **Number of files:**
-- **Lines of code (LOC):** (Remember that the system should be around 100,000 lines of code otherwise select a subset of the system to analyze.)
-- **Modules/Packages:**
-- **Number of developers:** _Add more relevant statistics..._
+Organizational: The ASF (infrastructure body), Open Source Security Foundation, and cyber defense organizations (CISA) that monitor Log4j software component as a fundamental element of the world software supply framework.
+
+
+## 3. System Description
+
+
+
+## 4. Code Statistics
+
+
+breve descrizione del sistema e statistiche di base del codice (#file, #linee di codice, #moduli/pacchetti, #sviluppatori, ecc.)
