@@ -4,11 +4,12 @@
 
 07/05/2026
 
-1
+1 Overview Purpose
 I reviewed the project information at
 [source](https://logging.apache.org/log4j/2.x/manual/index.html)
 to understand what it is, its use cases, and the contexts in which it can be applied. This helped me grasp the project's overall scope. Following this, I drafted the 'Purpose' section in the Overview.md file.
-2
+
+2 Overview Stakeholders
 
 2.1
 Then i cloned the repo [source](https://github.com/apache/logging-log4j2).
@@ -29,4 +30,13 @@ To identify the external stakeholders, I analyzed several key areas:
 
 
 08/05/2026
+3
 
+In this part, I spent some time reading information about the project from the official website, and then I analyzed the `log4j-api` and `log4j-core` directories to better understand how the connection between the API side and the Core side works. I also tried to identify the starting point of the framework and understand which components play the most important roles inside the system.
+
+For example, one of the main files I analyzed was `LoggerContext`, since it represents the direct link between the Core and the API parts of the framework.
+
+
+4 Code Statistics
+"In this section, I first identified the most relevant information to include in the system overview. Subsequently, I utilized specific commands (such as 'cloc') to calculate all the necessary metrics and statistics.
+I used grep -rE "^\s*(public|protected|private).*\(" log4j-core/src/main/java | grep -v "class " | wc -l for #method and find log4j-core/src/main/java -name "*.java" | wc -l  for class
