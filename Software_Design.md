@@ -81,9 +81,22 @@ LogManagerStatus.java is an internal utility that traks when LogManager has been
 
 ### 1.3 Knowledge Dependencies
 
-_Evaluate knowledge dependencies based on co-change (how often two files are modified together in the same commit)._
+<!--_Evaluate knowledge dependencies based on co-change (how often two files are modified together in the same commit)._-->
 
-- **Inconsistencies:** _Which knowledge dependencies are inconsistent with the code dependencies?_
+To analyze the knowledge dependencies, the commit history was extracted from the Apache Log4j Git Repository. Using a custom Python script, it was possible to filter the commit history for '.java' files and to track how often two files were modified together in the same commit. A minimum threshold of 15 "co-changes" was added to focus only on the most meaningful relationships. 
+
+Understandably, the results showed some obvious connections, like direct dependencies between a class and its testing class (for example, 'RingBufferLogEvent.java' changing with 'RingBufferLogEventTest.java'). However, the most instresting dependecies are those were there are no strong links, like structural dependencies, between the files. 
+
+  <!--_**Inconsistencies:** Which knowledge dependencies are inconsistent with the code dependencies?_-->
+We found some cases in which two files have a high co-change rate but don't actually import each other in the code. These fall into three main architectural patterns: 
+1. **Keeping Output Formats in Sync (Layouts):**
+   The most frequently co-changed pair in the analysis (28 times) was 'JsonLayout.java' and 'XmlLayout.java', followed by (21 times) 'JsonLayout.java' and 'YamlLayout.java'. These files sit in the same package, but they never call each other. They change together because of feature parity: whenever developers add a new detail to the logs, they have to update all the layout files at the same time so it works in every format.
+2. **Standard vs. "Garbage-Free" Implementations:**
+   Another big inconsistency is between 'CopyOnWriteSortedArrayThreadContextMap.java' and 'GarbageFreeSortedArrayThreadContextMap.java' (24 co-changes). Log4j provides a standard implementation and a "garbage-free" one, for high performance tasks. Since they basically do the same thing, every time a change is needed in one of them, it has to be mirrored in the other. 
+3. **Configuration and Security Setup:**
+    Finally, files that handle configuration or security setup change together. For example, 'KeyStoreConfiguration.java' and 'TrustStoreConfiguration.java' (19 co-changes) don't interact in the code, but, since they both deal with security certificates, they often change together. The same logic applies to configuration files, for example 'JsonConfiguration.java' and 'XmlConfiguration.java' (19 co-changes). Since both configuration files do the same operations, but with different formats, their behaviors need to change similarly. 
+
+In conclusion, the inconsistencies found in Log4j are design choices, not architectural flaws. They are necessary to ensure feature parity, optimize performance, and keep parallel configurations synchronized across independent files. 
 
 ## 2. Patterns
 
