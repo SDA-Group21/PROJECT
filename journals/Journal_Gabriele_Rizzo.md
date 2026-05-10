@@ -40,3 +40,38 @@ For example, one of the main files I analyzed was `LoggerContext`, since it repr
 4 Code Statistics
 "In this section, I first identified the most relevant information to include in the system overview. Subsequently, I utilized specific commands (such as 'cloc') to calculate all the necessary metrics and statistics.
 I used grep -rE "^\s*(public|protected|private).*\(" log4j-core/src/main/java | grep -v "class " | wc -l for #method and find log4j-core/src/main/java -name "*.java" | wc -l  for class
+
+`10/05/2026`
+
+`Point 1`
+
+I have analyzed the file `Software_Design.md`.
+
+The script created by Cristiano works correctly, i created my own and obtained the same result.
+I believe there is a slight imprecision in the description of `AbstractConfiguration.java`; they are right to define it as the orchestrator, but I wanted to specify that it is precisely the manager of the component graph.
+This is because, analyzing the code:
+
+```
+private ConcurrentMap<String, Appender> appenders = new ConcurrentHashMap<>();
+private ConcurrentMap<String, LoggerConfig> loggerConfigs = new ConcurrentHashMap<>();
+private List<CustomLevelConfig> customLevels = Collections.emptyList();
+```
+
+we find the data structures that store the components of the graph.
+
+then, for example, in the `doConfigure()` method, it transforms textual references into physical links, e.g., it associates `AppenderRef` with the actual instance of an `Appender` present in the map.
+
+Through the `setParents()` method, it defines a tree structure that allows logs to propagate from a child logger to a parent one.
+
+Describing `AbstractConfiguration.java` as the manager of the component graph also justifies its high Fan-Out, as to build the graph it must import and know every single existing component; if it were only an abstract orchestrator, it could delegate the creation of the pieces to another external component.
+
+`Point 2`
+
+`LoggerContext` acts as a bridge, as explained by Cristiano, between the API and Core, and this is evident because by implementing org.apache.logging.log4j.spi.LoggerContext in log4j-api, this class—which lives in the Core—makes itself available to the API (LogManager) to provide logging services requested by the user code.
+
+Furthermore, however, it must be noted that LoggerContext plays the role of an anchor, as it maintains a list of all the loggers requested by applications; this is also documented at line 67 of the file logging-log4j2/log4j-core/src/main/java/org/apache/logging/log4j/core/LoggerContext.java.
+
+Lowest Fan-Out is fine as it is.
+
+Regarding the Knowledge Dependencies part, it seems very accurate and well done, and I believe there is nothing to add; structural dependencies (code) and process dependencies (commit history) have been distinguished.
+The 3 identified patterns explain well why those files change together despite the absence of direct imports.
