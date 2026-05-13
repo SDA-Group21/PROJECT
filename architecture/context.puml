@@ -1,0 +1,27 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(app, "Java Application")
+
+Person(dev, "Developer")
+
+System(log4j2, "Apache Log4j2", "Java logging framework")
+
+System_Ext(fs, "File System")
+
+System_Ext(console, "Console")
+
+System_Ext(remote, "Remote Logging Systems")
+
+Rel(dev, log4j2, "Configures logging")
+
+Rel(app, log4j2, "Sends log events")
+
+Rel(log4j2, fs, "Writes log files")
+
+Rel(log4j2, console, "Prints logs")
+
+Rel(log4j2, remote, "Sends remote logs")
+
+@enduml

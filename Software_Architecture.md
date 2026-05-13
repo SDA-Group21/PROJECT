@@ -24,15 +24,18 @@ document is describe the software architecture of the system using the C4 model 
 
 ## 1. Tooling
 
-_State here the tools used to generate the C4 diagrams (e.g., Structurizr, draw.io, etc., referring to https://c4model.com/tooling)._
+The diagrams were created using PlantUML and the C4-PlantUML library.  
+This approach makes the diagrams easier to modify and maintain during the analysis process.
 
 ## 2. Context Level
 
-_Insert the Context diagram and its explanations._
+The Context diagram shows how Apache Log4j2 interacts with external applications and logging targets.  
+At this level, the goal was to understand the role of the framework inside a larger system.
 
 ## 3. Container Level
 
-_Insert the Container diagram and its explanations._
+The Container diagram focuses on the main Log4j2 modules and their responsibilities.  
+Particular attention was given to the separation between the API and the Core module.
 
 - **Clean Architecture:** _Did you find any relationship with the Clean Architecture blueprint?_
 

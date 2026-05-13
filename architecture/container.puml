@@ -1,0 +1,50 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(app, "Java Application")
+
+System_Boundary(log4j2, "Apache Log4j2") {
+
+    Container(api, "log4j-api", "Java", "Public logging API used by applications")
+
+    Container(core, "log4j-core", "Java", "Core logging engine and event processing")
+
+    Container(config, "Configuration System", "XML/JSON/YAML", "Loads and manages logging configuration")
+
+    Container(plugins, "Plugin System", "Java", "Extensibility mechanism for custom components")
+
+    Container(async, "Async Logging", "LMAX Disruptor", "Asynchronous high-performance logging")
+
+    Container(appenders, "Appenders", "Java", "Write logs to different destinations")
+
+    Container(layouts, "Layouts", "Java", "Format log events into output messages")
+}
+
+System_Ext(fs, "File System")
+
+System_Ext(console, "Console")
+
+System_Ext(remote, "Remote Logging Systems")
+
+Rel(app, api, "Uses logging API")
+
+Rel(api, core, "Delegates log events")
+
+Rel(config, core, "Configures")
+
+Rel(plugins, core, "Extends functionality")
+
+Rel(core, async, "Delegates async processing")
+
+Rel(core, appenders, "Sends log events")
+
+Rel(appenders, layouts, "Formats messages using")
+
+Rel(appenders, fs, "Writes log files")
+
+Rel(appenders, console, "Prints logs")
+
+Rel(appenders, remote, "Sends remote logs")
+
+@enduml
