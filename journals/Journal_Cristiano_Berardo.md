@@ -20,3 +20,21 @@
 - I run the script and manually checked the result using IDE searching tool for import
 - I analyzed the results and select the most relevant classes/interfaces
 - I wrote the Code Dependencies paragraph
+
+### 11/12/2026
+
+#### Software Design - 1.1 Methodology and Tools
+
+- Revision of the introduction
+
+### 13/12/2026
+
+#### Software Design - 2.1 Pattern 1: Singleton pattern
+
+- Started writing the first pattern: Singleton pattern
+
+### 14/12/2026
+
+#### Team meeting
+
+- Team meeting to discuss the progress of the report. I presented the first pattern.
