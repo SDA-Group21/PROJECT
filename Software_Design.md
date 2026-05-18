@@ -15,7 +15,10 @@
     - [1.2 Code Dependencies](#12-code-dependencies)
     - [1.3 Knowledge Dependencies](#13-knowledge-dependencies)
   - [2. Patterns](#2-patterns)
-    - [2.1 Pattern 1: \[Pattern Name\]](#21-pattern-1-pattern-name)
+    - [2.2 Pattern 2: Facade Pattern](#22-pattern-2-facade-pattern)
+      - [Context](#context)
+        - [How it works in Log4j](#how-it-works-in-log4j)
+    - [2.x Pattern x: Pattern Name](#2x-pattern-x-pattern-name)
   - [3. Summary](#3-summary)
 
 ---
@@ -59,13 +62,88 @@ In conclusion, the inconsistencies found in Log4j are design choices, not archit
 
 _Identify at least 4 instances of design patterns in the code._ _Include links to the source code for each._
 
-### 2.1 Pattern 1: [Pattern Name]
+### 2.2 Pattern 2: Facade Pattern
+
+#### Context 
+Log4j hides a complex subsystem that include context selection, configuration parsing, plugin discovery, and logger lifecycle management. Application code should not need to know about these internals; it should simply obtain a logger and emit messages.
+
+- **Roles:** 
+  - **Facade**: `LogManager.java` 
+    Provides a single, simplified entry point (`getLogger()`, `getContext()`, `shutdown()`).
+  - **Subsystem Interfaces**: `LoggerContetFactory.java ` and `LoggerContext.java`
+  - **Subsystem Implementation**: `LoggerContext.java` and `Logger.java`
+  - **Client**: Application code uses the facade to obtain a `Logger` from `Logger.java`.
+
+  ##### How it works in Log4j 
+  The client code calls `LogManager.getLogger(...)` and receivers a `Logger` without knowing which context or configuration format is active. The `LogManager` delegates to the current `LoggerContextFactory` the choice of the correct `LoggerContext` and returns a `Logger`.
+  ```java 
+  import org.apache.logging.log4j.LogManager;
+  import org.apache.logging.log4j.Logger;
+  
+  public class PaymentService {
+    private static final Logger log = LogManager.getLogger(PaymentService.class);
+
+    public void charge(double amount) {
+        log.info("Charging amount: {}", amount);
+    }
+  }
+  ```
+- **Problem Solved / Rationale:** 
+  - Problems: 
+    - The logging subsystem is large and highly modular. Without the facade, client would have to deal with context selection, configuration parsing, plugin discovery, and lifecycle management. 
+    - Logging must be easy to use with minimal boilerplate. 
+  - Solution: 
+    - Provide `LogManager` as a facade that centralizes common operations and delegates some duties to `LoggerContextFactory` and `LoggerContext`.
+  
+- **Alternatives:** 
+  - *Dependency Injection of `LoggerContext`*: A dependency injection container provides `LoggerContext` to classes that need logging. 
+    - *Pro*: Dependencies are explicit. 
+    - *Cons*: With this alternative the boilerplate code increases and logging becomes harder to use in simple apps. 
+  - *Direct Subsystem Access*: Client code calls `LoggerContextFactory` and `LoggerContext` directly, without the `LogManager`.
+    - *Pros*: Client code has full control over configuration and lifecycle. Moreover, it becomes easier to reach advanced features. 
+    - *Cons*: This solution is more verbose and harder to keep stable across versions. 
+
+```mermaid
+classDiagram
+  direction TB
+
+  class LogManager {
+    <<facade>>
+    +getLogger(...) Logger$
+    +getContext() LoggerContext$
+    +shutdown()$
+  }
+
+  class LoggerContextFactory {
+    <<interface>>
+    +getContext(...) LoggerContext
+  }
+
+  class LoggerContext {
+    <<interface>>
+    +getLogger(name) Logger
+  }
+
+  class Logger {
+    <<interface>>
+    +info(message, params)
+    +error(message, params)
+  }
+
+  LogManager ..> LoggerContextFactory : delegates to
+  LogManager ..> LoggerContext : obtains
+  LogManager ..> Logger : returns
+  LoggerContextFactory ..> LoggerContext : creates/returns
+  LoggerContext ..> Logger : provides
+```
+
+### 2.x Pattern x: Pattern Name
 
 - **Roles:** _Which classes play which role?_
 - **Problem Solved / Rationale:** _Why is this pattern used? What problem does it solve?_
 - **Alternatives:** _Is there an alternative? What would be the pros and cons?_
 
-_(Repeat the structure for Patterns 2, 3, and 4)_
+_(Repeat the structure for Patterns 3, and 4)_
 
 ## 3. Summary
 
