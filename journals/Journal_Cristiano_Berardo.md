@@ -38,3 +38,11 @@
 #### Team meeting
 
 - Team meeting to discuss the progress of the report. I presented the first pattern.
+
+### 18/12/2026
+
+- Started writing the third pattern: Flyweight pattern
+
+### 19/12/2026
+
+- Finished writing the third pattern: Flyweight pattern
