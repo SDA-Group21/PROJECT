@@ -19,6 +19,8 @@
   - [2. Patterns](#2-patterns)
     - [2.1 Pattern 1: Singleton](#21-pattern-1-singleton)
     - [Context](#context)
+    - [2.3 Pattern 3: Flyweight](#23-pattern-3-flyweight)
+    - [Context](#context-1)
   - [3. Summary](#3-summary)
 
 ---
@@ -225,6 +227,121 @@ classDiagram
   LogManager ..> SimpleLoggerContextFactory : fallback via INSTANCE
   LogManager ..> StringFormatterMessageFactory : uses INSTANCE
   LogManager o-- LoggerContextFactory : factory (volatile)
+```
+
+### 2.3 Pattern 3: Flyweight
+
+### Context
+
+`LoggerContext.java` acts as the manager for loggers, ensuring that requests for the same logger name always return the exact same shared instance.
+
+- **Roles:**
+  - **Flyweight Factory:** `LoggerContext.java`, utilizing `InternalLoggerRegistry.java`.
+    <br> When a client requests a logger, the factory checks if a logger with that specific name already exists in the registry. If it does, it returns the existing instance; if not, it creates a new one, stores it, and returns it.
+
+```java
+      // LoggerContext.java
+      public Logger getLogger(final String name, @Nullable final MessageFactory messageFactory) {
+        final MessageFactory effectiveMessageFactory =
+                messageFactory != null ? messageFactory : DEFAULT_MESSAGE_FACTORY;
+        // computeIfAbsent is the Flyweight pattern here.
+          // It shares existing instances and only instantiates new ones when strictly necessary.
+        return loggerRegistry.computeIfAbsent(name, effectiveMessageFactory, this::newInstance);
+    }
+```
+
+```java
+      // InternalLoggerRegistry.java
+        public Logger computeIfAbsent(
+              final String name,
+              final MessageFactory messageFactory,
+              final BiFunction<String, MessageFactory, Logger> loggerSupplier) {
+
+          // If the logger already exists, it returns the existing Flyweight instance without locking.
+          @Nullable Logger logger = getLogger(name, messageFactory);
+          if (logger != null) {
+              return logger;
+          }
+
+          Logger newLogger = loggerSupplier.apply(name, messageFactory);
+
+          // ...
+
+          // Inserting the new instance into a WeakHashMap
+          loggerRefByName.put(name, new WeakReference<>(logger = newLogger, staleLoggerRefs));
+
+          return logger;
+
+          // ...
+      }
+
+```
+
+- **Flyweight:** `Logger.java` the instance created and returned by `LoggerContext.java`. It is represented by the name and by the `MessageFactory`
+
+- **Client:** `LogManager.java` or any application classes that request the creation of a logger using `LogManager.getLogger()`.
+
+**Example of Flyweight usage (Client)**
+
+```java
+      import org.apache.logging.log4j.LogManager;
+      import org.apache.logging.log4j.Logger;
+      public class Main {
+          public static void main(String[] args) {
+              Logger logger1 = LogManager.getLogger("TestLogger");
+              Logger logger2 = LogManager.getLogger("TestLogger");
+
+              // Both logger1 and logger2 refer to the same instance, demonstrating the Flyweight pattern.
+              System.out.println(logger1 == logger2); // Output: true
+          }
+      }
+```
+
+- **Problem Solved / Rationale:**
+  - _Problems:_
+    - Creating a unique `Logger` object for every class in the application would cause a massive memory footprint and slow bootstrapping time
+  - _Solution:_
+    - The Flyweight pattern minimizes memory usage by sharing loggers with the same name and message.
+
+- **Alternatives:**
+  - _No Caching_ instantiating a new Logger every time `getLogger()` is called:
+    - _Pro:_ Less complex code, no need to manage complex lock
+    - _Cons:_ Massive memory waste and performance degradation
+
+```mermaid
+classDiagram
+
+    class Client {
+        <<Application>>
+        +main()
+    }
+
+    class LoggerContext {
+        <<Flyweight Factory>>
+        -InternalLoggerRegistry loggerRegistry
+        +getLogger(String name) Logger
+        +getLogger(String name, MessageFactory messageFactory) Logger
+    }
+
+    class InternalLoggerRegistry {
+        <<Flyweight Cache>>
+        -WeakHashMap loggerRefByNameByMessageFactory
+        +getLogger(String name, MessageFactory messageFactory) Logger
+        +computeIfAbsent(String name, MessageFactory messageFactory, BiFunction loggerSupplier) Logger
+    }
+
+    class Logger {
+        <<Flyweight>>
+        -String name
+        -MessageFactory messageFactory
+        +getContext(): LoggerContext
+    }
+
+    Client ..> LoggerContext : getLogger("name")
+    Client ..> Logger : Uses
+
+    LoggerContext *-- InternalLoggerRegistry : delegates
+    InternalLoggerRegistry o-- Logger : cache via WeakReference
 ```
 
 ## 3. Summary
