@@ -77,6 +77,40 @@ Log4j hides a complex subsystem that include context selection, configuration pa
   - **Subsystem Implementation**: `LoggerContext.java` and `Logger.java`
   - **Client**: Application code uses the facade to obtain a `Logger` from `Logger.java`.
 
+  ```mermaid
+  classDiagram
+    direction TB
+
+    class LogManager {
+      <<facade>>
+      +getLogger(...) Logger$
+      +getContext() LoggerContext$
+      +shutdown()$
+    }
+
+    class LoggerContextFactory {
+      <<interface>>
+      +getContext(...) LoggerContext
+    }
+
+    class LoggerContext {
+      <<interface>>
+      +getLogger(name) Logger
+    }
+
+    class Logger {
+      <<interface>>
+      +info(message, params)
+      +error(message, params)
+    }
+
+    LogManager ..> LoggerContextFactory : delegates to
+    LogManager ..> LoggerContext : obtains
+    LogManager ..> Logger : returns
+    LoggerContextFactory ..> LoggerContext : creates/returns
+    LoggerContext ..> Logger : provides
+  ```
+
   ##### How it works in Log4j 
   The client code calls `LogManager.getLogger(...)` and receivers a `Logger` without knowing which context or configuration format is active. The `LogManager` delegates to the current `LoggerContextFactory` the choice of the correct `LoggerContext` and returns a `Logger`.
   ```java 
@@ -106,40 +140,6 @@ Log4j hides a complex subsystem that include context selection, configuration pa
     - *Pros*: Client code has full control over configuration and lifecycle. Moreover, it becomes easier to reach advanced features. 
     - *Cons*: This solution is more verbose and harder to keep stable across versions. 
 
-```mermaid
-classDiagram
-  direction TB
-
-  class LogManager {
-    <<facade>>
-    +getLogger(...) Logger$
-    +getContext() LoggerContext$
-    +shutdown()$
-  }
-
-  class LoggerContextFactory {
-    <<interface>>
-    +getContext(...) LoggerContext
-  }
-
-  class LoggerContext {
-    <<interface>>
-    +getLogger(name) Logger
-  }
-
-  class Logger {
-    <<interface>>
-    +info(message, params)
-    +error(message, params)
-  }
-
-  LogManager ..> LoggerContextFactory : delegates to
-  LogManager ..> LoggerContext : obtains
-  LogManager ..> Logger : returns
-  LoggerContextFactory ..> LoggerContext : creates/returns
-  LoggerContext ..> Logger : provides
-```
-
 ### 2.4 Pattern 4: Chain of Responsibility 
 **Pattern Category**: Behavioral (Object-Based)
 
@@ -154,6 +154,35 @@ Log4j gives the opportunity to stack several filters on a logger to filter `LogE
   holds a list of filters and calls them in sequence.
   - **Client**: `AbstractFilterable.java`, `AppenderControl.java`
   `AbstractFilterable.java` is used by wrappers like `AppenderControl.java` and asks the chain if a `LogEvent` should be ignored. 
+
+  ```mermaid
+  classDiagram
+    direction TB
+
+    class AbstractFilterable {
+      +isFiltered(event) boolean
+    }
+
+    class CompositeFilter {
+      <<chain>>
+      +filter(event) Result
+    }
+
+    class Filter {
+      <<interface>>
+      +filter(event) Result
+    }
+
+    class ThresholdFilter
+    class MarkerFilter
+    class RegexFilter
+
+    AbstractFilterable --> CompositeFilter : holds
+    CompositeFilter --> Filter : iterates
+    Filter <|.. ThresholdFilter
+    Filter <|.. MarkerFilter
+    Filter <|.. RegexFilter
+  ```
 
   ##### How it works in Log4j 
   A `Filterable` component has a filter slot. If more filters are needed, Log4j wraps them into a `CompositeFilter`. The method `CompositeFilter.filter(...)` runs each filter in order and stops on the first `ACCEPT` or `DENY`. If all filters return `NEUTRAL`, the event continues. 
@@ -188,35 +217,6 @@ Log4j gives the opportunity to stack several filters on a logger to filter `LogE
   - *Hard-Coded*: Put the filter logic directly inside each appender's method and return early when the event should be skipped. 
     - *Pros*: Direct and fast.
     - *Cons*: The same rules get repeated in multiple appenders. 
-
-```mermaid
-classDiagram
-  direction TB
-
-  class AbstractFilterable {
-    +isFiltered(event) boolean
-  }
-
-  class CompositeFilter {
-    <<chain>>
-    +filter(event) Result
-  }
-
-  class Filter {
-    <<interface>>
-    +filter(event) Result
-  }
-
-  class ThresholdFilter
-  class MarkerFilter
-  class RegexFilter
-
-  AbstractFilterable --> CompositeFilter : holds
-  CompositeFilter --> Filter : iterates
-  Filter <|.. ThresholdFilter
-  Filter <|.. MarkerFilter
-  Filter <|.. RegexFilter
-```
 
 ## 3. Summary
 
