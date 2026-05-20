@@ -70,7 +70,7 @@ Still, there is one clear similarity. Application code depends on `log4j-api`, n
 
 For the Component level, we expanded `log4j-core`. This is the container where most runtime decisions are made, so it gives more information than expanding the API module. We did not expand every container because that would make the diagram larger without adding much to the architectural explanation. `log4j-api` mostly defines the public surface, while appenders, layouts, filters, and plugins make sense as parts of the Core processing pipeline.
 
-The components selected for the diagram are:
+The components selected for the component-level analysis are:
 
 - `LoggerContext`: keeps the active logging context and connects loggers to the current configuration.
 - `Configuration`: stores the logger configuration, appenders, filters, layouts, and related settings.
@@ -80,39 +80,6 @@ The components selected for the diagram are:
 - `Layout`: converts a log event into the format required by the appender.
 - `LogEvent`: carries the data produced by a logging call.
 - `AsyncLogger` or asynchronous logging components: move part of the work away from the application thread when asynchronous logging is used.
-
-The following C4 Component diagram shows the event flow inside `log4j-core`:
-
-```plantuml
-@startuml
-
-!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
-
-Container_Boundary(core, "log4j-core") {
-    Component(loggerContext, "LoggerContext", "Java class", "Manages the active logging context")
-    Component(configuration, "Configuration", "Java interface/class hierarchy", "Stores logger, filter, appender, and layout configuration")
-    Component(loggerConfig, "LoggerConfig", "Java class", "Applies logger-specific configuration to log events")
-    Component(filter, "Filter", "Java interface", "Accepts, denies, or passes log events")
-    Component(logEvent, "LogEvent", "Java interface", "Represents a structured logging event")
-    Component(asyncLogger, "Async Logging Components", "Java classes / LMAX Disruptor", "Processes log events asynchronously")
-    Component(appender, "Appender", "Java interface", "Writes log events to a destination")
-    Component(layout, "Layout", "Java interface", "Formats log events for output")
-}
-
-System_Ext(destination, "Logging Destination", "File system, console, or remote system")
-
-Rel(loggerContext, configuration, "Uses active configuration")
-Rel(configuration, loggerConfig, "Provides logger rules")
-Rel(loggerConfig, filter, "Evaluates event")
-Rel(loggerConfig, logEvent, "Processes")
-Rel(loggerConfig, asyncLogger, "Can delegate to")
-Rel(loggerConfig, appender, "Sends accepted events")
-Rel(asyncLogger, appender, "Dispatches events")
-Rel(appender, layout, "Formats with")
-Rel(appender, destination, "Writes to")
-
-@enduml
-```
 
 The flow can be read as a pipeline. A logging call creates a `LogEvent`. The active configuration selects the relevant `LoggerConfig`. Filters may stop the event, or they may let it continue. If the event is accepted, an appender receives it, the layout formats it, and the appender writes the result to the destination.
 
