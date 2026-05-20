@@ -33,7 +33,15 @@
 ### 18/05/2026
 
 #### Software Design - 2.2 Facade Pattern
-- Analyzed the code to find another pattern.
+- Analyzed the code to find a pattern.
 - Identified the facade pattern.
 - Began analyzing how the code uses the facade pattern.
 - Wrote the paragraph about the facade pattern.
+
+### 20/05/2026 
+
+#### Software Design - 2.4 Chain of Responsibility Pattern
+- Analyzed the code to find another pattern.
+- Identified the chain of responsibility pattern.
+- Began analyzing how the code uses the chain of responsibility pattern.
+- Wrote the paragraph about the pattern.
