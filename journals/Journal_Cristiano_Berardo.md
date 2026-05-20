@@ -46,3 +46,7 @@
 ### 19/12/2026
 
 - Finished writing the third pattern: Flyweight pattern
+
+### 20/12/2026
+
+- Revision and refinement of patterns paragraphs

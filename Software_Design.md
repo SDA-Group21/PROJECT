@@ -17,10 +17,12 @@
       - [Least dependent files (Lowest Fan-out)](#least-dependent-files-lowest-fan-out)
     - [1.3 Knowledge Dependencies](#13-knowledge-dependencies)
   - [2. Patterns](#2-patterns)
-    - [2.1 Pattern 1: Singleton](#21-pattern-1-singleton)
+    - [2.1 Pattern 1: Singleton Pattern](#21-pattern-1-singleton-pattern)
     - [Context](#context)
-    - [2.3 Pattern 3: Flyweight](#23-pattern-3-flyweight)
+        - [How it works in Log4j](#how-it-works-in-log4j)
+    - [2.3 Pattern 3: Flyweight Pattern](#23-pattern-3-flyweight-pattern)
     - [Context](#context-1)
+        - [How it works in Log4j](#how-it-works-in-log4j-1)
   - [3. Summary](#3-summary)
 
 ---
@@ -98,7 +100,9 @@ _(Repeat the structure for Patterns 2, 3, and 4)_ -->
 
 ## 2. Patterns
 
-### 2.1 Pattern 1: Singleton
+### 2.1 Pattern 1: Singleton Pattern
+
+**Pattern Category**: Creational (Object-Based)
 
 ### Context
 
@@ -125,6 +129,8 @@ LogManager.java is the anchor point for the Log4j logging system. The most commo
                   ? getFormatterLogger(StackLocatorUtil.getCallerClass(2))
                   : getLogger(name, StringFormatterMessageFactory.INSTANCE);
       }
+
+
       // Returns the current LoggerContext.
       public static LoggerContext getContext() {
           try {
@@ -136,6 +142,7 @@ LogManager.java is the anchor point for the Log4j logging system. The most commo
       }
 ```
 
+<!--
 **Example of _getFormatterLogger()_**
 
 ```java
@@ -148,14 +155,14 @@ LogManager.java is the anchor point for the Log4j logging system. The most commo
           public static void main(String[] args) {
               double balance = 1234.56;
               // Use of well-formatted log message
-              log.info("Saldo: %.2f EUR", balance);
+              log.info("Sale: %.2f EUR", balance);
           }
       }
 ```
 
-**Example of _getFormatterLogger()_**
+**Example of _getContext()_**
 
-```java
+ ```java
       import org.apache.logging.log4j.LogManager;
       import org.apache.logging.log4j.spi.LoggerContext;
       public class Main {
@@ -163,25 +170,29 @@ LogManager.java is the anchor point for the Log4j logging system. The most commo
 
               LoggerContext context = LogManager.getContext();
 
-              context.getLogger("TestLogger").info("Test riuscito!");
+              context.getLogger("TestLogger").info("Test passed!");
           }
       }
+``` -->
+
+##### How it works in Log4j
+
+```java
+
+  public class ReportService {
+      // Static logger for the class
+      private static final Logger log = LogManager.getFormatterLogger(ReportService.class);
+
+      public static void main(String[] args) {
+          LoggerContext context = LogManager.getContext();
+          double balance = 1234.56;
+
+          context.getLogger("TestLogger").info("Test passed!");
+
+          log.info("Sale: %.2f EUR", balance);
+      }
+  }
 ```
-
-- **Problem Solved / Rationale:** -
-  - _Problems:_
-    - Creating a new object via the `new` keyword every time `LogManager` needs to be called would result in unnecessary memory waste and overhead for the Garbage Collector, especially in a logging framework invoked thousands of times per second.
-    - Multiple instantiation of LogManager would lead to inconsistent states and different configurations.
-  - _Solution:_
-    - The Singleton pattern ensures that one and only one instance of this class exists shared across the entire Java Virtual Machine (JVM). This guarantees a minimal memory footprint, optimal performance, and provides `LogManager` with a unique, global, and immediate access point.
-
-- **Alternatives:**
-  - _Static Class:_ The factory could be turned into a class with only static methods.
-    - _Pro:_ Simple and fast to implement.
-    - _Cons:_ Static methods cannot implement interfaces (e.g. the `LoggerContextFactory` or `MessageFactory` interfaces implemented respectively in _SimpleLoggerContextFactory_ or _StringFormatterMessageFactory_). <br> The Singleton allows leveraging polymorphism, a requirement heavily used in Log4j.
-  - _Dependency Injection (DI):_ Inject the factory instance where needed using a Dipendency Injection framework.
-    - _Pro:_ Reduces tight coupling and greatly simplifies isolation during testing (Mocking).
-    - _Cons:_ In a base-level logging infrastructure, requiring dependency injection would force developers to pass the instance to every single class in their application domain, violating ease of use and polluting business logic with infrastructure code (boilerplate).
 
 ```mermaid
 classDiagram
@@ -229,7 +240,24 @@ classDiagram
   LogManager o-- LoggerContextFactory : factory (volatile)
 ```
 
-### 2.3 Pattern 3: Flyweight
+- **Problem Solved / Rationale:** -
+  - _Problems:_
+    - Creating a new object via the `new` keyword every time `LogManager` needs to be called would result in unnecessary memory waste and overhead for the Garbage Collector, especially in a logging framework invoked thousands of times per second.
+    - Multiple instantiation of LogManager would lead to inconsistent states and different configurations.
+  - _Solution:_
+    - The Singleton pattern ensures that one and only one instance of this class exists shared across the entire Java Virtual Machine (JVM). This guarantees a minimal memory footprint, optimal performance, and provides `LogManager` with a unique, global, and immediate access point.
+
+- **Alternatives:**
+  - _Static Class:_ The factory could be turned into a class with only static methods.
+    - _Pro:_ Simple and fast to implement.
+    - _Cons:_ Static methods cannot implement interfaces (e.g. the `LoggerContextFactory` or `MessageFactory` interfaces implemented respectively in _SimpleLoggerContextFactory_ or _StringFormatterMessageFactory_). <br> The Singleton allows leveraging polymorphism, a requirement heavily used in Log4j.
+  - _Dependency Injection (DI):_ Inject the factory instance where needed using a Dipendency Injection framework.
+    - _Pro:_ Reduces tight coupling and greatly simplifies isolation during testing (Mocking).
+    - _Cons:_ In a base-level logging infrastructure, requiring dependency injection would force developers to pass the instance to every single class in their application domain, violating ease of use and polluting business logic with infrastructure code (boilerplate).
+
+### 2.3 Pattern 3: Flyweight Pattern
+
+**Pattern Category**: Structural (Object-Based)
 
 ### Context
 
@@ -240,40 +268,28 @@ classDiagram
     <br> When a client requests a logger, the factory checks if a logger with that specific name already exists in the registry. If it does, it returns the existing instance; if not, it creates a new one, stores it, and returns it.
 
 ```java
-      // LoggerContext.java
-      public Logger getLogger(final String name, @Nullable final MessageFactory messageFactory) {
-        final MessageFactory effectiveMessageFactory =
-                messageFactory != null ? messageFactory : DEFAULT_MESSAGE_FACTORY;
-        // computeIfAbsent is the Flyweight pattern here.
-          // It shares existing instances and only instantiates new ones when strictly necessary.
-        return loggerRegistry.computeIfAbsent(name, effectiveMessageFactory, this::newInstance);
-    }
+  // LoggerContext.java
+  public Logger getLogger(final String name, @Nullable final MessageFactory messageFactory) {
+      final MessageFactory effectiveMessageFactory =
+              messageFactory != null ? messageFactory : DEFAULT_MESSAGE_FACTORY;
+
+      // Flyweight pattern: it shares existing instances and only instantiates new ones when strictly necessary.
+      return loggerRegistry.computeIfAbsent(name, effectiveMessageFactory, this::newInstance);
+  }
 ```
 
 ```java
-      // InternalLoggerRegistry.java
-        public Logger computeIfAbsent(
-              final String name,
-              final MessageFactory messageFactory,
-              final BiFunction<String, MessageFactory, Logger> loggerSupplier) {
-
-          // If the logger already exists, it returns the existing Flyweight instance without locking.
-          @Nullable Logger logger = getLogger(name, messageFactory);
-          if (logger != null) {
-              return logger;
-          }
-
-          Logger newLogger = loggerSupplier.apply(name, messageFactory);
-
-          // ...
-
-          // Inserting the new instance into a WeakHashMap
-          loggerRefByName.put(name, new WeakReference<>(logger = newLogger, staleLoggerRefs));
-
+  // InternalLoggerRegistry.java
+  public Logger computeIfAbsent(...) {
+      // If the logger already exists, it returns the existing Flyweight instance
+      Logger logger = getLogger(name, messageFactory);
+      if (logger != null) {
           return logger;
-
-          // ...
       }
+
+      Logger newLogger = loggerSupplier.apply(name, messageFactory);
+      return newLogger;
+  }
 
 ```
 
@@ -281,7 +297,7 @@ classDiagram
 
 - **Client:** `LogManager.java` or any application classes that request the creation of a logger using `LogManager.getLogger()`.
 
-**Example of Flyweight usage (Client)**
+<!-- **Example of Flyweight usage (Client)**
 
 ```java
       import org.apache.logging.log4j.LogManager;
@@ -295,18 +311,21 @@ classDiagram
               System.out.println(logger1 == logger2); // Output: true
           }
       }
+``` -->
+
+##### How it works in Log4j
+
+```java
+  public class Main {
+      public static void main(String[] args) {
+          Logger logger1 = LogManager.getLogger("TestLogger");
+          Logger logger2 = LogManager.getLogger("TestLogger");
+
+          // Both logger1 and logger2 refer to the same instance, demonstrating the Flyweight pattern.
+          System.out.println(logger1 == logger2); // Output: true
+      }
+  }
 ```
-
-- **Problem Solved / Rationale:**
-  - _Problems:_
-    - Creating a unique `Logger` object for every class in the application would cause a massive memory footprint and slow bootstrapping time
-  - _Solution:_
-    - The Flyweight pattern minimizes memory usage by sharing loggers with the same name and message.
-
-- **Alternatives:**
-  - _No Caching_ instantiating a new Logger every time `getLogger()` is called:
-    - _Pro:_ Less complex code, no need to manage complex lock
-    - _Cons:_ Massive memory waste and performance degradation
 
 ```mermaid
 classDiagram
@@ -343,6 +362,17 @@ classDiagram
     LoggerContext *-- InternalLoggerRegistry : delegates
     InternalLoggerRegistry o-- Logger : cache via WeakReference
 ```
+
+- **Problem Solved / Rationale:**
+  - _Problems:_
+    - Creating a unique `Logger` object for every class in the application would cause a massive memory footprint and slow bootstrapping time
+  - _Solution:_
+    - The Flyweight pattern minimizes memory usage by sharing loggers with the same name and message.
+
+- **Alternatives:**
+  - _No Caching_ instantiating a new Logger every time `getLogger()` is called:
+    - _Pro:_ Less complex code, no need to manage complex lock
+    - _Cons:_ Massive memory waste and performance degradation
 
 ## 3. Summary
 
