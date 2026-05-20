@@ -18,7 +18,9 @@
     - [2.2 Pattern 2: Facade Pattern](#22-pattern-2-facade-pattern)
       - [Context](#context)
         - [How it works in Log4j](#how-it-works-in-log4j)
-    - [2.x Pattern x: Pattern Name](#2x-pattern-x-pattern-name)
+    - [2.4 Pattern 4: Chain of Responsibility](#24-pattern-4-chain-of-responsibility)
+      - [Context](#context-1)
+        - [How it works in Log4j](#how-it-works-in-log4j-1)
   - [3. Summary](#3-summary)
 
 ---
@@ -63,13 +65,14 @@ In conclusion, the inconsistencies found in Log4j are design choices, not archit
 _Identify at least 4 instances of design patterns in the code._ _Include links to the source code for each._
 
 ### 2.2 Pattern 2: Facade Pattern
+**Pattern Category**: Structural
 
 #### Context 
 Log4j hides a complex subsystem that include context selection, configuration parsing, plugin discovery, and logger lifecycle management. Application code should not need to know about these internals; it should simply obtain a logger and emit messages.
 
 - **Roles:** 
   - **Facade**: `LogManager.java` 
-    Provides a single, simplified entry point (`getLogger()`, `getContext()`, `shutdown()`).
+    provides a single, simplified entry point (`getLogger()`, `getContext()`, `shutdown()`).
   - **Subsystem Interfaces**: `LoggerContetFactory.java ` and `LoggerContext.java`
   - **Subsystem Implementation**: `LoggerContext.java` and `Logger.java`
   - **Client**: Application code uses the facade to obtain a `Logger` from `Logger.java`.
@@ -137,13 +140,83 @@ classDiagram
   LoggerContext ..> Logger : provides
 ```
 
-### 2.x Pattern x: Pattern Name
+### 2.4 Pattern 4: Chain of Responsibility 
+**Pattern Category**: Behavioral (Object-Based)
 
-- **Roles:** _Which classes play which role?_
-- **Problem Solved / Rationale:** _Why is this pattern used? What problem does it solve?_
-- **Alternatives:** _Is there an alternative? What would be the pros and cons?_
+#### Context 
+Log4j gives the opportunity to stack several filters on a logger to filter `LogEvent`s. Each filter returns a `Filter.Result` (`ACCEPT`, `NEUTRAL`, or `DENY`).
 
-_(Repeat the structure for Patterns 3, and 4)_
+- **Roles:** 
+  - **Handler Interface**: `Filter.java`
+  defines `filter(...)` and the possible outcomes (`Filter.Result`).
+  - **Concrete Handlers**: `ThresholdFilter.java` (blocks or allows based on level), `MarkerFilter.java` (filters using markers), `RegexFilter.java` (accepts/denies based on a message regex).
+  - **Chain Container**: `CompositeFilter.java`
+  holds a list of filters and calls them in sequence.
+  - **Client**: `AbstractFilterable.java`, `AppenderControl.java`
+  `AbstractFilterable.java` is used by wrappers like `AppenderControl.java` and asks the chain if a `LogEvent` should be ignored. 
+
+  ##### How it works in Log4j 
+  A `Filterable` component has a filter slot. If more filters are needed, Log4j wraps them into a `CompositeFilter`. The method `CompositeFilter.filter(...)` runs each filter in order and stops on the first `ACCEPT` or `DENY`. If all filters return `NEUTRAL`, the event continues. 
+
+  ```java 
+  // Key code from CompositeFilter.java
+  @Override
+  public Result filter(
+      final Logger logger, final Level level, final Marker marker, final String msg, final Object... params) {
+    Result result = Result.NEUTRAL;
+    for (int i = 0; i < filters.length; i++) {
+      result = filters[i].filter(logger, level, marker, msg, params);
+      if (result == Result.ACCEPT || result == Result.DENY) {
+        return result;
+      }
+    }
+    return result;
+  }
+  ```
+- **Problem Solved / Rationale:** 
+  - Problems: 
+    - Need to use multiple filters at the same time. 
+    - The system has to let users add or remove filters without changing the core code. 
+    - A single big filter is hard to read and test. 
+  - Solution: 
+    Use a filter chain, so each filter gets the chance to handle the event and the chain stops as soon as a decision is made. 
+  
+- **Alternatives:** 
+  - *One giant filter with `if/else` statements*: Implement a single `Filter` class that checks all the conditions in one long `if/else` chain and returns the `Result` directly.
+    - *Pro*: All the code is in one class, so it is easy to find.
+    - *Cons*: The code grows quickly and becomes hard to understand, to test and risky to change.
+  - *Hard-Coded*: Put the filter logic directly inside each appender's method and return early when the event should be skipped. 
+    - *Pros*: Direct and fast.
+    - *Cons*: The same rules get repeated in multiple appenders. 
+
+```mermaid
+classDiagram
+  direction TB
+
+  class AbstractFilterable {
+    +isFiltered(event) boolean
+  }
+
+  class CompositeFilter {
+    <<chain>>
+    +filter(event) Result
+  }
+
+  class Filter {
+    <<interface>>
+    +filter(event) Result
+  }
+
+  class ThresholdFilter
+  class MarkerFilter
+  class RegexFilter
+
+  AbstractFilterable --> CompositeFilter : holds
+  CompositeFilter --> Filter : iterates
+  Filter <|.. ThresholdFilter
+  Filter <|.. MarkerFilter
+  Filter <|.. RegexFilter
+```
 
 ## 3. Summary
 
