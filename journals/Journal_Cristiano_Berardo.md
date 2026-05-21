@@ -2,7 +2,6 @@
 
 ## Contribution Tracking
 
-### 07/05/2026
 
 #### General tasks
 
