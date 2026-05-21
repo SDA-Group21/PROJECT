@@ -1,11 +1,5 @@
 # Report: Software Design
 
-**Note** Max 2500 words except diagrams.
-
-**After the word limit, teachers reserve the right to stop reading, which may affect the teams’ grade**
-
----
-
 ## Table of Contents
 
 - [Report: Software Design](#report-software-design)
@@ -18,10 +12,10 @@
     - [1.3 Knowledge Dependencies](#13-knowledge-dependencies)
   - [2. Patterns](#2-patterns)
     - [2.1 Pattern 1: Singleton Pattern](#21-pattern-1-singleton-pattern)
-    - [Context](#context)
+      - [Context](#context)
         - [How it works in Log4j](#how-it-works-in-log4j)
     - [2.3 Pattern 3: Flyweight Pattern](#23-pattern-3-flyweight-pattern)
-    - [Context](#context-1)
+      - [Context](#context-1)
         - [How it works in Log4j](#how-it-works-in-log4j-1)
   - [3. Summary](#3-summary)
 
@@ -30,8 +24,6 @@
 ## 1. Dependencies
 
 ### 1.1 Methodology and Tools
-
-<!-- _Describe the methods and tools used to analyze the dependencies and the results obtained._ -->
 
 In the following sections, some custom Python scripts were used to perform static analyses of the code.
 
@@ -42,10 +34,6 @@ For **Knowledge Dependencies**, the commit history was extracted from the Apache
 
 ### 1.2 Code Dependencies
 
-<!-- _Evaluate code dependencies based on the imports in the source code._
-
-- **Most/Least dependent files:** _Indicate which files have the most or least dependencies and explain why._  -->
-
 #### Most dependent files (Highest Fan-out)
 
 _Base path_: ./log4j-core/src/main/java/org/apache/logging/log4j/core
@@ -53,11 +41,9 @@ _Base path_: ./log4j-core/src/main/java/org/apache/logging/log4j/core
 1. config/`AbstractConfiguration.java` - 43 internal imports
 2. config/`LoggerConfig.java` - 32 internal imports
 3. `LoggerContext.java` - 31 internal imports
-<!-- 4. layout/`Rfc5424Layout.java` - 31 internal imports
-4. appender/`SmtpAppender.java` - 30 internal imports -->
 
 The most coupled file is AbstractConfiguration.java, the _orchestrator_ of the system, indeed, it initializes, configures, starts, stops and sets up the configuration logging.
-The high Fan-Out is justified because AbstractConfiguration.java is the integration point of the framework. (Facade pattern <-- too be removed :) )
+The high Fan-Out is justified because AbstractConfiguration.java is the integration point of the framework.
 
 Unlike AbstractConfiguration.java, whose coupling is about assembling the system, LoggerConfig.java is used as a _dispatcher_ seated between the API layer and the Core layer. It receives log events and forwards them to the appropriate Appenders, applying filters.
 
@@ -70,8 +56,6 @@ _Base path_: ./log4j-api/src/main/java/org/apache/logging/log4j
 1. `BridgeAware.java` - 0 internal imports
 2. `LoggingException.java` - 0 internal imports
 3. internal/`LogManagerStatus.java` - 0 internal imports
-   <!-- 3. `CloseableThreadContext.java` - 0 internal imports -->
-   <!-- 4. `Marker.java` - 0 internal imports -->
 
 BridgeAware.java is an interface with a single method, _setEntryPoint_, and no imports. Since it is an interface, no implementation, there is no need to import any other classes. This maximise reusability.
 
@@ -86,25 +70,13 @@ _Evaluate knowledge dependencies based on co-change (how often two files are mod
 
 - **Inconsistencies:** _Which knowledge dependencies are inconsistent with the code dependencies?_
 
-<!-- ## 2. Patterns
-
-_Identify at least 4 instances of design patterns in the code._ _Include links to the source code for each._
-
-### 2.1 Pattern 1: [Pattern Name]
-
-- **Roles:** _Which classes play which role?_
-- **Problem Solved / Rationale:** _Why is this pattern used? What problem does it solve?_
-- **Alternatives:** _Is there an alternative? What would be the pros and cons?_
-
-_(Repeat the structure for Patterns 2, 3, and 4)_ -->
-
 ## 2. Patterns
 
 ### 2.1 Pattern 1: Singleton Pattern
 
 **Pattern Category**: Creational (Object-Based)
 
-### Context
+#### Context
 
 Log4j is a logging framework that serves as a centralized entry point for all logging operations in an application. The framework needs to provide global access to logger instances and configuration management.
 
@@ -142,38 +114,7 @@ LogManager.java is the anchor point for the Log4j logging system. The most commo
       }
 ```
 
-<!--
-**Example of _getFormatterLogger()_**
-
-```java
-      import org.apache.logging.log4j.LogManager;
-      import org.apache.logging.log4j.Logger;
-      public class ReportService {
-          // Static logger for the class
-          // Since getFormmatterLogger() is Singleton, no overhead
-          private static final Logger log = LogManager.getFormatterLogger(ReportService.class);
-          public static void main(String[] args) {
-              double balance = 1234.56;
-              // Use of well-formatted log message
-              log.info("Sale: %.2f EUR", balance);
-          }
-      }
-```
-
-**Example of _getContext()_**
-
- ```java
-      import org.apache.logging.log4j.LogManager;
-      import org.apache.logging.log4j.spi.LoggerContext;
-      public class Main {
-          public static void main(String[] args) {
-
-              LoggerContext context = LogManager.getContext();
-
-              context.getLogger("TestLogger").info("Test passed!");
-          }
-      }
-``` -->
+![Singleton Pattern](./images/Software_Design/Singleton_pattern.png)
 
 ##### How it works in Log4j
 
@@ -194,53 +135,7 @@ LogManager.java is the anchor point for the Log4j logging system. The most commo
   }
 ```
 
-```mermaid
-classDiagram
-  direction TB
-
-  class LoggerContextFactory {
-    <<interface>>
-    +getContext(fqcn, loader, externalContext, currentContext) LoggerContext
-    +shutdown(fqcn, loader, currentContext, allContexts)
-  }
-
-  class MessageFactory {
-    <<interface>>
-    +newMessage(message, params) Message
-  }
-
-  class SimpleLoggerContextFactory {
-    +INSTANCE SimpleLoggerContextFactory$
-    -SimpleLoggerContextFactory()
-    +getContext(...) LoggerContext
-  }
-
-  class StringFormatterMessageFactory {
-    +INSTANCE StringFormatterMessageFactory$
-    -StringFormatterMessageFactory()
-    +newMessage(message, params) Message
-  }
-
-  class LogManager {
-    -factory LoggerContextFactory$
-    -FQCN String$
-    #LogManager()
-    +getContext() LoggerContext$
-    +getLogger() Logger$
-    +getFormatterLogger() Logger$
-    +getFactory() LoggerContextFactory$
-    +setFactory(factory)$
-    +shutdown()$
-  }
-
-  LoggerContextFactory <|.. SimpleLoggerContextFactory : implements
-  MessageFactory <|.. StringFormatterMessageFactory : implements
-  LogManager ..> SimpleLoggerContextFactory : fallback via INSTANCE
-  LogManager ..> StringFormatterMessageFactory : uses INSTANCE
-  LogManager o-- LoggerContextFactory : factory (volatile)
-```
-
-- **Problem Solved / Rationale:** -
+- **Problem Solved / Rationale:**
   - _Problems:_
     - Creating a new object via the `new` keyword every time `LogManager` needs to be called would result in unnecessary memory waste and overhead for the Garbage Collector, especially in a logging framework invoked thousands of times per second.
     - Multiple instantiation of LogManager would lead to inconsistent states and different configurations.
@@ -259,7 +154,7 @@ classDiagram
 
 **Pattern Category**: Structural (Object-Based)
 
-### Context
+#### Context
 
 `LoggerContext.java` acts as the manager for loggers, ensuring that requests for the same logger name always return the exact same shared instance.
 
@@ -297,21 +192,7 @@ classDiagram
 
 - **Client:** `LogManager.java` or any application classes that request the creation of a logger using `LogManager.getLogger()`.
 
-<!-- **Example of Flyweight usage (Client)**
-
-```java
-      import org.apache.logging.log4j.LogManager;
-      import org.apache.logging.log4j.Logger;
-      public class Main {
-          public static void main(String[] args) {
-              Logger logger1 = LogManager.getLogger("TestLogger");
-              Logger logger2 = LogManager.getLogger("TestLogger");
-
-              // Both logger1 and logger2 refer to the same instance, demonstrating the Flyweight pattern.
-              System.out.println(logger1 == logger2); // Output: true
-          }
-      }
-``` -->
+![Flyweight Pattern](./images/Software_Design/Flyweight_pattern.png)
 
 ##### How it works in Log4j
 
@@ -325,42 +206,6 @@ classDiagram
           System.out.println(logger1 == logger2); // Output: true
       }
   }
-```
-
-```mermaid
-classDiagram
-
-    class Client {
-        <<Application>>
-        +main()
-    }
-
-    class LoggerContext {
-        <<Flyweight Factory>>
-        -InternalLoggerRegistry loggerRegistry
-        +getLogger(String name) Logger
-        +getLogger(String name, MessageFactory messageFactory) Logger
-    }
-
-    class InternalLoggerRegistry {
-        <<Flyweight Cache>>
-        -WeakHashMap loggerRefByNameByMessageFactory
-        +getLogger(String name, MessageFactory messageFactory) Logger
-        +computeIfAbsent(String name, MessageFactory messageFactory, BiFunction loggerSupplier) Logger
-    }
-
-    class Logger {
-        <<Flyweight>>
-        -String name
-        -MessageFactory messageFactory
-        +getContext(): LoggerContext
-    }
-
-    Client ..> LoggerContext : getLogger("name")
-    Client ..> Logger : Uses
-
-    LoggerContext *-- InternalLoggerRegistry : delegates
-    InternalLoggerRegistry o-- Logger : cache via WeakReference
 ```
 
 - **Problem Solved / Rationale:**
