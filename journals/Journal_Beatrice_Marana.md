@@ -45,3 +45,8 @@
 - Identified the chain of responsibility pattern.
 - Began analyzing how the code uses the chain of responsibility pattern.
 - Wrote the paragraph about the pattern.
+
+### 21/05/2026 
+
+#### Software Design 
+- Replacement of the mermaid code with the pictures. 
