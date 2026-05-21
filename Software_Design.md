@@ -77,39 +77,7 @@ Log4j hides a complex subsystem that include context selection, configuration pa
   - **Subsystem Implementation**: `LoggerContext.java` and `Logger.java`
   - **Client**: Application code uses the facade to obtain a `Logger` from `Logger.java`.
 
-  ```mermaid
-  classDiagram
-    direction TB
-
-    class LogManager {
-      <<facade>>
-      +getLogger(...) Logger$
-      +getContext() LoggerContext$
-      +shutdown()$
-    }
-
-    class LoggerContextFactory {
-      <<interface>>
-      +getContext(...) LoggerContext
-    }
-
-    class LoggerContext {
-      <<interface>>
-      +getLogger(name) Logger
-    }
-
-    class Logger {
-      <<interface>>
-      +info(message, params)
-      +error(message, params)
-    }
-
-    LogManager ..> LoggerContextFactory : delegates to
-    LogManager ..> LoggerContext : obtains
-    LogManager ..> Logger : returns
-    LoggerContextFactory ..> LoggerContext : creates/returns
-    LoggerContext ..> Logger : provides
-  ```
+  ![Facade Pattern](./images/Software_Design/Facade_pattern.png "Facade Pattern")
 
   ##### How it works in Log4j 
   The client code calls `LogManager.getLogger(...)` and receivers a `Logger` without knowing which context or configuration format is active. The `LogManager` delegates to the current `LoggerContextFactory` the choice of the correct `LoggerContext` and returns a `Logger`.
@@ -126,10 +94,10 @@ Log4j hides a complex subsystem that include context selection, configuration pa
   }
   ```
 - **Problem Solved / Rationale:** 
-  - Problems: 
+  - *Problems*: 
     - The logging subsystem is large and highly modular. Without the facade, client would have to deal with context selection, configuration parsing, plugin discovery, and lifecycle management. 
     - Logging must be easy to use with minimal boilerplate. 
-  - Solution: 
+  - *Solution*: 
     - Provide `LogManager` as a facade that centralizes common operations and delegates some duties to `LoggerContextFactory` and `LoggerContext`.
   
 - **Alternatives:** 
@@ -155,34 +123,7 @@ Log4j gives the opportunity to stack several filters on a logger to filter `LogE
   - **Client**: `AbstractFilterable.java`, `AppenderControl.java`
   `AbstractFilterable.java` is used by wrappers like `AppenderControl.java` and asks the chain if a `LogEvent` should be ignored. 
 
-  ```mermaid
-  classDiagram
-    direction TB
-
-    class AbstractFilterable {
-      +isFiltered(event) boolean
-    }
-
-    class CompositeFilter {
-      <<chain>>
-      +filter(event) Result
-    }
-
-    class Filter {
-      <<interface>>
-      +filter(event) Result
-    }
-
-    class ThresholdFilter
-    class MarkerFilter
-    class RegexFilter
-
-    AbstractFilterable --> CompositeFilter : holds
-    CompositeFilter --> Filter : iterates
-    Filter <|.. ThresholdFilter
-    Filter <|.. MarkerFilter
-    Filter <|.. RegexFilter
-  ```
+  ![Chain of Responsibility Pattern](./images/Software_Design/ChainOfResponsibility_pattern.png "Chain of Responsibility Pattern")
 
   ##### How it works in Log4j 
   A `Filterable` component has a filter slot. If more filters are needed, Log4j wraps them into a `CompositeFilter`. The method `CompositeFilter.filter(...)` runs each filter in order and stops on the first `ACCEPT` or `DENY`. If all filters return `NEUTRAL`, the event continues. 
@@ -203,11 +144,11 @@ Log4j gives the opportunity to stack several filters on a logger to filter `LogE
   }
   ```
 - **Problem Solved / Rationale:** 
-  - Problems: 
+  - *Problems*: 
     - Need to use multiple filters at the same time. 
     - The system has to let users add or remove filters without changing the core code. 
     - A single big filter is hard to read and test. 
-  - Solution: 
+  - *Solution*: 
     Use a filter chain, so each filter gets the chance to handle the event and the chain stops as soon as a decision is made. 
   
 - **Alternatives:** 
