@@ -50,3 +50,7 @@
 ### 20/12/2026
 
 - Revision and refinement of patterns paragraphs
+
+### 21/12/2026
+
+- Replacement of mermaid code with .png file
