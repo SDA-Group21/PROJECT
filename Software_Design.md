@@ -1,11 +1,5 @@
 # Report: Software Design
 
-**Note** Max 2500 words except diagrams. 
-
-**After the word limit, teachers reserve the right to stop reading, which may affect the teams’ grade**
-
----
-
 ## Table of Contents
 
 - [Report: Software Design](#report-software-design)
@@ -22,14 +16,12 @@
       - [Context](#context-1)
         - [How it works in Log4j](#how-it-works-in-log4j-1)
   - [3. Summary](#3-summary)
-
 ---
 
 ## 1. Dependencies
 
 ### 1.1 Methodology and Tools
 
-_Describe the methods and tools used to analyze the dependencies and the results obtained._
 In the following sections, some custom Python scripts were used to perform static analyses of the code. 
 
 For **Code Dependencies**, a static analysis was performed utilizing regular expressions to identify imports within the two core components: log4j-core and log4j-api. Tests and `package-info.java` were excluded from this analysis as they were not considered important for the purpose of this study. 
@@ -45,11 +37,8 @@ _Evaluate code dependencies based on the imports in the source code._
 
 ### 1.3 Knowledge Dependencies
 
-<!--_Evaluate knowledge dependencies based on co-change (how often two files are modified together in the same commit)._-->
-
 Understandably, the results of the Python script showed some obvious connections, like direct dependencies between a class and its testing class (for example, `RingBufferLogEvent.java` changing with `RingBufferLogEventTest.java` 29 times). However, the most interesting dependencies are those where there are no strong links, like structural dependencies, between the files. 
 
-  <!--_**Inconsistencies:** Which knowledge dependencies are inconsistent with the code dependencies?_-->
 We found some cases in which two files have a high co-change rate but don't actually import each other in the code. These fall into three main architectural patterns: 
 1. **Keeping Output Formats in Sync (Layouts):**
    One of the most frequently co-changed pair in the analysis (29 times) was `JsonLayout.java` and `XmlLayout.java`, followed by (22 times) `JsonLayout.java` and `YamlLayout.java`. These files sit in the same package, but they never call each other. They change together because of feature parity: whenever developers add a new detail to the logs, they have to update all the layout files at the same time to make it work in every format.
@@ -61,8 +50,6 @@ We found some cases in which two files have a high co-change rate but don't actu
 In conclusion, the inconsistencies found in Log4j are design choices, not architectural flaws. They are necessary to ensure feature parity, optimize performance, and keep parallel configurations synchronized across independent files. 
 
 ## 2. Patterns
-
-_Identify at least 4 instances of design patterns in the code._ _Include links to the source code for each._
 
 ### 2.2 Pattern 2: Facade Pattern
 **Pattern Category**: Structural
