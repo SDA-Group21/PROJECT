@@ -20,15 +20,17 @@ document is describe the software architecture of the system using the C4 model 
 ## 1. Tooling
 
 The diagrams were created using PlantUML and the C4-PlantUML library.
-This approach makes the diagrams easier to modify and maintain during the analysis process.
-For this report, using diagrams as code was useful because the model changed a few times while we were deciding where to put the boundaries. With PlantUML, the diagrams can be reviewed in the repository in the same way as the Markdown files, instead of being separate images edited manually.
+This approach made the diagrams easier to modify and maintain during the analysis process.
 
-The Context and Container diagrams are in the `architecture` directory:
+Using diagrams as code was especially useful because the architecture model changed several times while we were deciding how to define the system boundaries and abstraction levels. With PlantUML, the diagrams can be reviewed and versioned directly in the repository instead of being maintained as separate manually edited images.
+
+The Context, Container, and Component diagrams are located in the `architecture` directory:
 
 - `architecture/context.puml`
 - `architecture/container.puml`
+- `architecture/component-core.puml`
 
-We did not try to describe every module in the Apache Log4j2 repository. The project is larger than the part that is useful for this analysis. We focused on the logging pipeline and especially on the boundary between `log4j-api` and `log4j-core`, because that is where the architecture becomes clear: application code sees the API, while the actual processing is handled by Core.
+We did not try to describe every module in the Apache Log4j2 repository because the project is significantly larger than the part relevant for this analysis. Instead, we focused mainly on the logging pipeline and especially on the separation between `log4j-api` and `log4j-core`, since this boundary represents the central architectural idea of the framework: application code interacts with the API, while the actual logging implementation and runtime processing are handled inside Core.
 
 ## 2. Context Level
 
@@ -43,22 +45,17 @@ This is the main architectural role of the framework. It keeps logging decisions
 ## 3. Container Level
 
 The Container diagram focuses on the main Log4j2 modules and their responsibilities.
-Particular attention was given to the separation between the API and the Core module.
-This separation is the most relevant part of the Container view.
+The most important part at this level is the separation between `log4j-api` and `log4j-core`.
 
-`log4j-api` is the part used directly by application developers. It contains the public logging interface: loggers, logging methods, levels, markers, and the types needed to make logging calls. Its job is not to perform all logging work, but to give client code a stable surface to depend on.
+`log4j-api` is the module used directly by applications. It contains the public logging API, including loggers, logging methods, levels, markers, and the main abstractions needed for logging calls. Its purpose is to give applications a stable interface without exposing the internal implementation details.
 
-`log4j-core` is where the implementation lives. It receives events coming from the API side, applies the active configuration, checks filters, calls appenders, and manages the runtime context. In practice, this is the module that turns a simple call such as `logger.info(...)` into output written to a file, console, socket, or another destination.
+`log4j-core` contains the actual implementation of the logging engine. It receives log events from the API side, manages configuration, processes events, applies filters, calls appenders, handles layouts, and manages asynchronous logging. In practice, this is the module that turns a logging call such as `logger.info(...)` into output written to a file, console, or remote destination.
 
-The Configuration System loads external configuration files. Log4j2 supports XML, JSON, YAML, and properties files. This is important because logging requirements usually change between environments. A developer machine may only need console output, while a production deployment may need rolling files or a remote collector.
+The separation between API and Core is one of the main architectural ideas in Log4j2. Applications depend only on the API module, while most implementation details stay inside Core. This improves modularity and keeps application code less dependent on internal framework changes.
 
-The Plugin System is the extension point of the framework. Appenders, layouts, filters, and other configuration elements can be discovered as plugins. This avoids hard-coding every possible destination or format inside the core pipeline.
+The Container Diagram also includes bridge modules such as `log4j-slf4j2-impl` and `log4j-jul`. These modules allow external logging APIs like SLF4J and `java.util.logging` to forward log events into the Log4j2 engine.
 
-The Async Logging part represents the asynchronous path based on LMAX Disruptor. When this mode is enabled, the application thread can hand off the event instead of doing all the logging work directly. This matters for applications where logging is frequent and blocking I/O would be too expensive.
-
-Appenders write accepted events to concrete destinations such as files, consoles, sockets, databases, or remote systems. Layouts are used before that final write. They convert the structured event into the representation expected by the destination, for example a pattern-based string, JSON, or CSV.
-
-So the runtime path is quite simple at this level: application code calls the API, the API reaches Core, Core applies configuration and plugin-based behavior, and appenders with layouts produce the final output.
+At this level, the runtime flow is relatively simple: applications or external logging APIs create log events, the API or bridge modules forward them to `log4j-core`, and Core processes the events and sends the final output to logging destinations such as the file system, console, or remote logging systems.
 
 ### Clean architecture relationship
 
@@ -68,34 +65,38 @@ Still, there is one clear similarity. Application code depends on `log4j-api`, n
 
 ## 4. Component Level
 
-For the Component level, we expanded `log4j-core`. This is the container where most runtime decisions are made, so it gives more information than expanding the API module. We did not expand every container because that would make the diagram larger without adding much to the architectural explanation. `log4j-api` mostly defines the public surface, while appenders, layouts, filters, and plugins make sense as parts of the Core processing pipeline.
+For the Component level, we decided to expand `log4j-core` because this is the part where most of the logging logic is actually handled. Expanding `log4j-api` would not provide the same level of detail since it mostly exposes interfaces and abstractions used by applications.
 
-The components selected for the component-level analysis are:
+The component diagram focuses on the main parts involved in the logging pipeline and event processing flow.
 
-- `LoggerContext`: keeps the active logging context and connects loggers to the current configuration.
-- `Configuration`: stores the logger configuration, appenders, filters, layouts, and related settings.
-- `LoggerConfig`: applies the effective rules for a logger and decides how an event is processed.
-- `Filter`: decides whether an event is accepted, rejected, or passed to the next step.
-- `Appender`: writes accepted log events to a concrete destination.
-- `Layout`: converts a log event into the format required by the appender.
-- `LogEvent`: carries the data produced by a logging call.
-- `AsyncLogger` or asynchronous logging components: move part of the work away from the application thread when asynchronous logging is used.
+The main components included in the analysis are:
 
-The flow can be read as a pipeline. A logging call creates a `LogEvent`. The active configuration selects the relevant `LoggerConfig`. Filters may stop the event, or they may let it continue. If the event is accepted, an appender receives it, the layout formats it, and the appender writes the result to the destination.
+- `LoggerContext` — keeps the active runtime logging context and connects the system to the current configuration.
+- `Configuration` — stores logger settings, appenders, layouts, filters, and related configuration data.
+- `LoggerConfig` — applies logging rules and controls how log events are processed.
+- `Filter` — decides whether an event should continue in the pipeline or be rejected.
+- `Appender` — writes log events to concrete destinations.
+- `Layout` — transforms log events into the required output format.
+- `LogEvent` — represents the logging event itself.
+- `AsyncLogger` — handles asynchronous logging using the Disruptor-based async pipeline.
+
+The diagram can be understood as a processing flow. A logging call creates a `LogEvent`, the active configuration selects the correct `LoggerConfig`, filters are applied, and then the event is passed to appenders. Before writing the final output, layouts format the message into the representation expected by the destination.
+
+One important observation is that `LoggerConfig` acts as the central coordination point inside the runtime pipeline. It connects filtering, appenders, layouts, and asynchronous processing together, so most event-processing decisions pass through this component.
 
 ### SOLID principles
 
-At component level, Log4j2 mostly follows SOLID, although the central coordination classes are more coupled than the smaller extension components.
+At the component level, Log4j2 generally follows SOLID principles reasonably well, especially for extension-related parts of the framework.
 
-The Single Responsibility Principle is visible in the separation between filters, appenders, layouts, and configuration objects. A filter makes decisions about events. A layout formats events. An appender writes them somewhere. These responsibilities are separate enough to make the design understandable.
+The Single Responsibility Principle can be seen in the separation between filters, layouts, appenders, and configuration-related components. Each of them mainly focuses on one part of the logging pipeline.
 
-The Open/Closed Principle is probably the strongest part of the design. New appenders, layouts, and filters can be added through the plugin mechanism without changing the main processing flow. This is a good fit for a logging framework, because users often need new destinations or formats.
+The Open/Closed Principle is one of the strongest aspects of the design. New appenders, layouts, and filters can be added through the plugin system without changing the main logging flow implemented in Core.
 
-The Dependency Inversion Principle appears in the use of interfaces such as `Appender`, `Layout`, and `Filter`. Core code can work through these abstractions instead of depending only on concrete implementations. At a higher level, applications depend on `log4j-api` rather than directly on `log4j-core`.
+The Dependency Inversion Principle is visible through abstractions such as `Appender`, `Layout`, and `Filter`. The framework mainly works through interfaces instead of depending only on concrete implementations. Applications also depend on `log4j-api` instead of directly interacting with `log4j-core`.
 
-The Interface Segregation Principle is also reasonably respected, since extension points are split into separate interfaces instead of one large interface for every logging component. The Liskov Substitution Principle is expected for implementations of these interfaces: a custom appender or layout should be usable wherever the corresponding interface is expected.
+The Interface Segregation Principle is mostly respected because logging-related responsibilities are separated into multiple smaller abstractions instead of one large interface.
 
-The weaker area is around `LoggerContext`, `Configuration`, and `LoggerConfig`. These classes connect many parts of the runtime. This is not automatically a SOLID violation, because a logging framework needs some central coordination, but these are the classes where changes are more likely to have wider effects.
+The part that appears more tightly coupled is around `LoggerContext`, `Configuration`, and especially `LoggerConfig`, since these components coordinate many parts of the runtime behavior. However, for a logging framework this kind of central coordination is difficult to avoid completely.
 
 ## 5. Architectural Characteristics
 

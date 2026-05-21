@@ -2,23 +2,19 @@
 
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-Person(app, "Java Application")
+LAYOUT_TOP_DOWN()
+
+Person(app, "Java Application", "Application using the Log4j2 logging framework")
 
 System_Boundary(log4j2, "Apache Log4j2") {
 
     Container(api, "log4j-api", "Java", "Public logging API used by applications")
 
-    Container(core, "log4j-core", "Java", "Core logging engine and event processing")
+    Container(core, "log4j-core", "Java", "Main logging engine handling configuration and log event processing")
 
-    Container(config, "Configuration System", "XML/JSON/YAML", "Loads and manages logging configuration")
+    Container(slf4jBridge, "log4j-slf4j2-impl", "Java", "SLF4J bridge implementation for Log4j2")
 
-    Container(plugins, "Plugin System", "Java", "Extensibility mechanism for custom components")
-
-    Container(async, "Async Logging", "LMAX Disruptor", "Asynchronous high-performance logging")
-
-    Container(appenders, "Appenders", "Java", "Write logs to different destinations")
-
-    Container(layouts, "Layouts", "Java", "Format log events into output messages")
+    Container(julBridge, "log4j-jul", "Java", "Bridge between java.util.logging and Log4j2")
 }
 
 System_Ext(fs, "File System")
@@ -27,24 +23,26 @@ System_Ext(console, "Console")
 
 System_Ext(remote, "Remote Logging Systems")
 
+System_Ext(slf4j, "SLF4J API")
+
+System_Ext(jul, "java.util.logging")
+
 Rel(app, api, "Uses logging API")
 
 Rel(api, core, "Delegates log events")
 
-Rel(config, core, "Configures")
+Rel(slf4j, slf4jBridge, "Uses")
 
-Rel(plugins, core, "Extends functionality")
+Rel(slf4jBridge, core, "Forwards log events")
 
-Rel(core, async, "Delegates async processing")
+Rel(jul, julBridge, "Uses")
 
-Rel(core, appenders, "Sends log events")
+Rel(julBridge, core, "Redirects log events")
 
-Rel(appenders, layouts, "Formats messages using")
+Rel(core, fs, "Writes log files")
 
-Rel(appenders, fs, "Writes log files")
+Rel(core, console, "Prints logs")
 
-Rel(appenders, console, "Prints logs")
-
-Rel(appenders, remote, "Sends remote logs")
+Rel(core, remote, "Sends remote logs")
 
 @enduml

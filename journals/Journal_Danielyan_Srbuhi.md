@@ -15,3 +15,13 @@ I also set up PlantUML with C4 diagrams support and started creating the first a
 
 Spent additional time checking how the main modules communicate with each other and how log events move through the system.
 
+### 21.05.2026
+
+Today I refactored the Container Diagram after spending more time understanding the C4 model and the actual structure of the Log4j2 repository.
+
+Removed internal parts such as appenders, layouts, plugins, configuration handling, and async logging from the Container Diagram because they are not separately deployable modules. Moved them to the Component Diagram of `log4j-core` instead.
+
+Updated the Container Diagram to focus on the real Log4j2 modules like `log4j-api`, `log4j-core`, `log4j-slf4j2-impl`, and `log4j-jul`.
+
+Also added the first version of the `log4j-core` Component Diagram to represent the main internal logging flow and communication between the core components.
+
