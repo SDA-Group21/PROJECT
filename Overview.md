@@ -58,8 +58,6 @@ The internal workflow of the system is governed by four primary component types,
 
 `[App] → LogManager → Logger → LoggerContext → Configuration → Filter → Appender → Layout → [Destination]`
 
-<p align="center">
-<img src="https://i.imgur.com/Lu9wK4R.png" alt="Logo Log4j" width="600"></p>
 
 ### 3.3 Concurrency and Configuration
 

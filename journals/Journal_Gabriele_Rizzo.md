@@ -2,7 +2,9 @@
 
 ## Contribution Tracking
 
-07/05/2026
+ I was entirely responsible for drafting the Overview section, and I provided review and support for the Software Design section
+
+# 07/05/2026
 
 1 Overview Purpose
 I reviewed the project information at
@@ -29,7 +31,7 @@ To identify the external stakeholders, I analyzed several key areas:
 - Institutional Involvement: I looked into the organizations orbiting Log4j beyond the owner (ASF). I found that OpenSSF backs and defends Log4j, as it is considered a critical piece of international software framework (especially subsequent to the 2021 Log4Shell occurrences). Similarly, CISA maintains updated databases of vulnerable Log4j versions and mandates that federal agencies update to the latest patched releases
 
 
-08/05/2026
+# 08/05/2026
 3
 
 In this part, I spent some time reading information about the project from the official website, and then I analyzed the `log4j-api` and `log4j-core` directories to better understand how the connection between the API side and the Core side works. I also tried to identify the starting point of the framework and understand which components play the most important roles inside the system.
@@ -75,3 +77,45 @@ Lowest Fan-Out is fine as it is.
 
 Regarding the Knowledge Dependencies part, it seems very accurate and well done, and I believe there is nothing to add; structural dependencies (code) and process dependencies (commit history) have been distinguished.
 The 3 identified patterns explain well why those files change together despite the absence of direct imports.
+
+# 23-05-2026 and 24-05-2026
+
+I have reviewed the section completed by Beatrice and Cristiano regarding the Patterns, and I noticed that they have also updated the Code and Knowledge dependencies part.
+
+Since I consider this section to be very well structured, I have no specific modifications to suggest.
+
+Instead, I proceeded to create 3 diagrams:
+
+### A high-level diagram to show the relationship between the core classes and methods (it fits well within the Software Design section and provides a general overview)
+
+![ClassDiagram](../images/Software_Design/ClassDiagram.png)
+
+- I have mapped the main interfaces and classes of the project, which constitute the entry point and the log processing chain: `LogManager` (facade), `LoggerContextFactory` (interface factory), `SimpleLoggerContextFactory` (fallback Singleton), `LoggerContext`, `InternalLoggerRegistry` (cache/flyweight), `Logger`, `LoggerConfig`, `Appender`, `Filter` e `CompositeFilter`.
+- Examples of methods highlighted in the diagram and present in the code:
+    - `org.apache.logging.log4j.LogManager#getLogger(...)` e `#getContext(...)` (use factory and obtain `LoggerContext`).
+    - `org.apache.logging.log4j.spi.LoggerContextFactory#getContext(...)` (context creation contract).
+    - `org.apache.logging.log4j.simple.SimpleLoggerContextFactory#INSTANCE` (fallback singleton instance).
+    - `InternalLoggerRegistry#getLogger(name, messageFactory)` (cache with `computeIfAbsent` that implement Flyweight pattern).
+
+
+### A diagram showing the Logger creation sequence, in this case the purpose is to illustrate how LogManager uses the factory and how the registry provides a Logger (Facade, Singleton, Flyweight).
+
+
+![LoggerCreationSequence](../images/Software_Design/LoggerCreationSequence.png)
+
+The diagram shows the precise sequence:
+- `Client` invokes `LogManager.getLogger(...)`
+- `LogManager` consults `LoggerContextFactory` (or resorts to `SimpleLoggerContextFactory.INSTANCE` if the factory is not available)
+- il `LoggerContext` select `MessageFactory` (es `StringFormatterMessageFactory.INSTANCE`) and delegates the resolution/creation of the `Logger` to `InternalLoggerRegistry` that use `computeIfAbsent` to return a shared instance (flyweight) or create a new one.
+`LogManager.getContext()` use `factory.getContext(...)` and in the catch block falls back on `SimpleLoggerContextFactory.INSTANCE.getContext(...)`
+
+### A diagram showing the life cycle of the data and demonstrating the chain of Responsibility, which was explained in chapter 2.4, providing a visual understanding of how CompositeFilter queries the various filters.
+
+![LogEventFlowSequence](../images/Software_Design/LogEventFlowSequence.png)
+
+- The diagram illustrates the path of the `LogEvent` at runtime:
+call to the `Logger` (flyweight) -> resolution of `LoggerConfig` via `LoggerContext` -> invocation of the `CompositeFilter` which iterates through the registered `Filters` (Chain of Responsibility) -> if accepted, dispatch to the `Appenders` and formatting with the `Layout`.
+
+`LoggerConfig` is the component that receives and dispatches the event toward `CompositeFilter` and `Appenders`.
+The classes `AbstractFilterable`, `CompositeFilter`, and the `Filter` implementations determine the result (`ACCEPT`/`DENY`/`NEUTRAL`), as described in chapter 2.4 of the design document.
+
