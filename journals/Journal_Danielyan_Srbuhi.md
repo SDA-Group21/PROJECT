@@ -25,3 +25,12 @@ Updated the Container Diagram to focus on the real Log4j2 modules like `log4j-ap
 
 Also added the first version of the `log4j-core` Component Diagram to represent the main internal logging flow and communication between the core components.
 
+### 25.05.2026
+
+Today I continued working on the architecture analysis and improved the Component level diagrams for both `log4j-core` and `log4j-api`.
+
+Spent more time analyzing the separation between the public API layer and the internal logging engine. Added a separate component diagram for `log4j-api` to better represent the main abstractions exposed to applications, such as `Logger`, `LogManager`, `Message`, `Marker`, `Level`, and `ThreadContext`.
+
+Also refined the `log4j-core` component diagram and adjusted the structure of the runtime logging pipeline after reviewing the repository and the relationships between the main processing components more carefully.
+
+Updated the architecture report to keep the explanations consistent with the new diagrams and the C4 abstraction levels.

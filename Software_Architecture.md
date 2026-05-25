@@ -29,6 +29,8 @@ The Context, Container, and Component diagrams are located in the `architecture`
 - `architecture/context.puml`
 - `architecture/container.puml`
 - `architecture/component-core.puml`
+- `architecture/component-api.puml`
+
 
 We did not try to describe every module in the Apache Log4j2 repository because the project is significantly larger than the part relevant for this analysis. Instead, we focused mainly on the logging pipeline and especially on the separation between `log4j-api` and `log4j-core`, since this boundary represents the central architectural idea of the framework: application code interacts with the API, while the actual logging implementation and runtime processing are handled inside Core.
 
@@ -66,6 +68,8 @@ Still, there is one clear similarity. Application code depends on `log4j-api`, n
 ## 4. Component Level
 
 For the Component level, we decided to expand `log4j-core` because this is the part where most of the logging logic is actually handled. Expanding `log4j-api` would not provide the same level of detail since it mostly exposes interfaces and abstractions used by applications.
+
+We also added a smaller component diagram for `log4j-api` to better represent the public abstractions exposed to applications, such as `Logger`, `LogManager`, `Message`, `Marker`, `Level`, and `ThreadContext`.
 
 The component diagram focuses on the main parts involved in the logging pipeline and event processing flow.
 
