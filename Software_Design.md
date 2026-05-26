@@ -131,7 +131,7 @@ public static LoggerContext getContext() {
 ```
 
 <p align="center">
-  <img src="./images/Software_Design/Singleton_pattern.png" width="600" alt="Singleton Pattern"/> 
+  <img src="./images/Software_Design/Singleton_pattern.png" width="80%" alt="Singleton Pattern"/> 
 </p>
 
 ##### How it works in Log4j
@@ -183,7 +183,7 @@ Log4j hides a complex subsystem that include context selection, configuration pa
   - **Client**: Application code uses the facade to obtain a `Logger` from `Logger.java`.
 
 <p align="center">
-  <img src="./images/Software_Design/Facade_pattern.png" width="300" alt="Facade Pattern"/>
+  <img src="./images/Software_Design/Facade_pattern.png" width="400" alt="Facade Pattern"/>
 </p>
 
 ##### How it works in Log4j
@@ -257,7 +257,7 @@ public Logger computeIfAbsent(...) {
 - **Client:** `LogManager.java` or any application classes that request the creation of a logger using `LogManager.getLogger()`.
 
 <p align="center">
-  <img src="./images/Software_Design/Flyweight_pattern.png" width="450" alt="Flyweight Pattern"/>
+  <img src="./images/Software_Design/Flyweight_pattern.png" width="500" alt="Flyweight Pattern"/>
 </p>
 
 ##### How it works in Log4j
