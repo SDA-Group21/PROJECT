@@ -53,3 +53,7 @@
 ### 21/12/2026
 
 - Replacement of mermaid code with .png file
+
+### 21/12/2026
+
+- Conclusion of the report and final revision of the while document.
