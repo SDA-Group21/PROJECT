@@ -54,6 +54,10 @@
 
 - Replacement of mermaid code with .png file
 
-### 21/12/2026
+### 22/12/2026
 
 - Conclusion of the report and final revision of the while document.
+
+### 02/06/2026
+
+- Added Gabriele's images to the Software Design report.

@@ -23,6 +23,7 @@
     - [2.4 Pattern 4: Chain of Responsibility](#24-pattern-4-chain-of-responsibility)
       - [Context](#context-3)
         - [How it works in Log4j](#how-it-works-in-log4j-3)
+    - [Core Classes and Method Relationships overview](#core-classes-and-method-relationships-overview)
   - [3. Summary](#3-summary)
 
 ---
@@ -67,7 +68,7 @@ BridgeAware.java is an interface with a single method, _setEntryPoint_, requirin
 LoggingException.java extends the Java's standard _RuntimeException_.
 Responsable for encapsulate error message caught anywhere in the system.
 
-LogManagerStatus.java is an internal utility tracking the initialization state of LogManager. 
+LogManagerStatus.java is an internal utility tracking the initialization state of LogManager.
 
 Each class has exactly one responsibility and no dependencies - a direct application of the Single Responsibility Principle (SRP).
 
@@ -338,6 +339,12 @@ public Result filter(
   - _Hard-Coded_: Put the filter logic directly inside each appender's method and return early when the event should be skipped.
     - _Pros_: Direct and fast.
     - _Cons_: The same rules get repeated in multiple appenders.
+
+### Core Classes and Method Relationships overview
+
+<p align="center">
+  <img src="./images/Software_Design/ClassDiagram.png" width="800" alt="Class Diagram with all patterns analyzed"/>
+</p>
 
 ## 3. Summary
 
