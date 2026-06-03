@@ -27,22 +27,22 @@ System_Ext(slf4j, "SLF4J API")
 
 System_Ext(jul, "java.util.logging")
 
-Rel(app, api, "Uses logging API")
+Rel(app, api, "Uses logging API [Java API]")
 
-Rel(api, core, "Delegates log events")
+Rel(api, core, "Delegates log events [Java Method Calls]")
 
-Rel(slf4j, slf4jBridge, "Uses")
+Rel(slf4j, slf4jBridge, "Uses [SLF4J API]")
 
-Rel(slf4jBridge, core, "Forwards log events")
+Rel(slf4jBridge, api, "Routes logging calls [SLF4J Bridge]")
 
-Rel(jul, julBridge, "Uses")
+Rel(jul, julBridge, "Uses [java.util.logging API]")
 
-Rel(julBridge, core, "Redirects log events")
+Rel(julBridge, api, "Routes logging calls [JUL Bridge]")
 
-Rel(core, fs, "Writes log files")
+Rel(core, fs, "Writes log files [File I/O]")
 
-Rel(core, console, "Prints logs")
+Rel(core, console, "Prints logs [Standard Output]")
 
-Rel(core, remote, "Sends remote logs")
+Rel(core, remote, "Sends remote logs [TCP/UDP/HTTP]")
 
 @enduml
