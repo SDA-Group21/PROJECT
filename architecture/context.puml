@@ -2,11 +2,15 @@
 
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
 
-Person(app, "Java Application")
+LAYOUT_TOP_DOWN()
 
-Person(dev, "Developer")
+System_Ext(app, "Java Application", "Application using the Log4j2 logging framework")
 
 System(log4j2, "Apache Log4j2", "Java logging framework")
+
+System_Ext(slf4j, "SLF4J API", "Logging facade")
+
+System_Ext(jul, "java.util.logging", "Java standard logging framework")
 
 System_Ext(fs, "File System")
 
@@ -14,14 +18,16 @@ System_Ext(console, "Console")
 
 System_Ext(remote, "Remote Logging Systems")
 
-Rel(dev, log4j2, "Configures logging")
+Rel(app, log4j2, "Uses logging API", "Java API")
 
-Rel(app, log4j2, "Sends log events")
+Rel(slf4j, log4j2, "Routes logging through Log4j2", "SLF4J Bridge")
 
-Rel(log4j2, fs, "Writes log files")
+Rel(jul, log4j2, "Routes logging through Log4j2", "JUL Bridge")
 
-Rel(log4j2, console, "Prints logs")
+Rel(log4j2, fs, "Writes log files", "File I/O")
 
-Rel(log4j2, remote, "Sends remote logs")
+Rel(log4j2, console, "Prints logs", "Standard Output")
+
+Rel(log4j2, remote, "Sends remote logs", "TCP/UDP/HTTP")
 
 @enduml
