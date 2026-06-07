@@ -1,0 +1,40 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_TOP_DOWN()
+
+System_Ext(app, "Java Application", "Application using the Log4j2 logging framework")
+System_Ext(slf4j, "SLF4J API")
+System_Ext(jul, "java.util.logging")
+
+System_Boundary(log4j2, "Apache Log4j2") {
+
+    Container(api, "log4j-api", "Java", "Public logging API used by applications")
+
+    Container(core, "log4j-core", "Java", "Main logging engine handling configuration and log event processing")
+
+    Container(slf4jBridge, "log4j-slf4j2-impl", "Java", "SLF4J adapter for Log4j2")
+
+    Container(julBridge, "log4j-jul", "Java", "java.util.logging adapter for Log4j2")
+}
+
+System_Ext(fs, "File System")
+System_Ext(console, "Console")
+System_Ext(remote, "Remote Logging Systems")
+
+Rel(app, api, "Uses logging API [Java API]")
+
+Rel(slf4j, slf4jBridge, "Uses [SLF4J API]")
+Rel(jul, julBridge, "Uses [java.util.logging API]")
+
+Rel(slf4jBridge, api, "Routes logging calls [Java Method Calls]")
+Rel(julBridge, api, "Routes logging calls [Java Method Calls]")
+
+Rel(api, core, "Delegates log events [Java Method Calls]")
+
+Rel(core, fs, "Writes log files [File I/O]")
+Rel(core, console, "Prints logs [Standard Output]")
+Rel(core, remote, "Sends remote logs [Network I/O]")
+
+@enduml
