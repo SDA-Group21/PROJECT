@@ -14,9 +14,9 @@ System_Boundary(log4j2, "Apache Log4j2") {
 
     Container(core, "log4j-core", "Java", "Main logging engine handling configuration and log event processing")
 
-    Container(slf4jBridge, "log4j-slf4j2-impl", "Java", "SLF4J bridge implementation for Log4j2")
+    Container(slf4jBridge, "log4j-slf4j2-impl", "Java", "SLF4J adapter for Log4j2")
 
-    Container(julBridge, "log4j-jul", "Java", "Bridge between java.util.logging and Log4j2")
+    Container(julBridge, "log4j-jul", "Java", "java.util.logging adapter for Log4j2")
 }
 
 System_Ext(fs, "File System")
@@ -28,13 +28,13 @@ Rel(app, api, "Uses logging API [Java API]")
 Rel(slf4j, slf4jBridge, "Uses [SLF4J API]")
 Rel(jul, julBridge, "Uses [java.util.logging API]")
 
-Rel(slf4jBridge, api, "Routes logging calls [SLF4J Bridge]")
-Rel(julBridge, api, "Routes logging calls [JUL Bridge]")
+Rel(slf4jBridge, api, "Routes logging calls [Java Method Calls]")
+Rel(julBridge, api, "Routes logging calls [Java Method Calls]")
 
 Rel(api, core, "Delegates log events [Java Method Calls]")
 
 Rel(core, fs, "Writes log files [File I/O]")
 Rel(core, console, "Prints logs [Standard Output]")
-Rel(core, remote, "Sends remote logs [TCP/UDP/HTTP]")
+Rel(core, remote, "Sends remote logs [Network I/O]")
 
 @enduml

@@ -42,3 +42,14 @@ Today I created an integrated Component Diagram showing the collaboration betwee
 
 Spent time connecting log4j-api, log4j-core, bridge modules, appenders, layouts, async logging, and external outputs into one runtime architecture view. Also adjusted the layout to better represent log4j-core as the central runtime processing engine of the framework.
  
+### 04.06.2026
+
+Today I reviewed the architecture diagrams and updated the component descriptions to better reflect the actual responsibilities of the Log4j2 modules and runtime components.
+
+Spent time improving the explanations of the main containers and components, refining the documentation, and making the architecture descriptions more consistent with the implementation found in the repository.
+
+### 07.06.2026
+
+Today I focused on improving consistency between the Context, Container, and Component diagrams.
+
+Updated relationships, communication types, external systems, and component interactions to keep the different C4 levels aligned. Also reviewed the diagrams and added technology labels such as Java API, Java Method Calls, File I/O, Standard Output, and Network I/O where appropriate.

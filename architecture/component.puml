@@ -4,9 +4,9 @@
 
 LAYOUT_TOP_DOWN()
 
-title Apache Log4j2 - Integrated Runtime Architecture
+title Apache Log4j2 -  Architecture
 
-Person(app, "Java Application", "Application using Log4j2 logging")
+System_Ext(app, "Java Application", "Application using Log4j2 logging")
 
 System_Ext(slf4jApi, "SLF4J API")
 System_Ext(julApi, "java.util.logging")
@@ -69,66 +69,66 @@ System_Boundary(julBridge, "log4j-jul") {
 }
 
 
-Rel(app, logManager, "Retrieves logger")
+Rel(app, logManager, "Retrieves logger [Java API]")
 
-Rel(logManager, logger, "Provides")
+Rel(logManager, logger, "Provides [Java Method Calls]")
 
-Rel(logger, extendedLogger, "Delegates advanced operations")
+Rel(logger, extendedLogger, "Delegates advanced operations [Java Method Calls]")
 
-Rel(logger, message, "Creates messages")
+Rel(logger, message, "Creates messages [Java Object Creation]")
 
-Rel(logger, level, "Uses")
+Rel(logger, level, "Uses [Java API]")
 
-Rel(logger, marker, "Uses")
+Rel(logger, marker, "Uses [Java API]")
 
-Rel(logger, threadContext, "Reads context")
+Rel(logger, threadContext, "Reads context [Java API]")
 
-Rel(logger, logEvent, "Creates logging event")
-
-
-Rel(extendedLogger, loggerConfig, "Delegates processing")
-
-Rel(loggerContext, configuration, "Uses active configuration")
-
-Rel(configuration, loggerConfig, "Provides logger rules")
-
-Rel(logEvent, loggerConfig, "Processed by")
+Rel(logger, logEvent, "Creates logging event [Java Object Creation]")
 
 
-Rel(loggerConfig, filter, "Applies filters")
+Rel(extendedLogger, loggerConfig, "Delegates processing [Java Method Calls]")
 
-Rel(loggerConfig, asyncLogger, "Delegates async processing")
+Rel(loggerContext, configuration, "Uses active configuration [Java Method Calls]")
 
-Rel(asyncLogger, appenderControl, "Dispatches async events")
+Rel(configuration, loggerConfig, "Provides logger rules [Java Method Calls]")
 
-Rel(loggerConfig, appenderControl, "Delegates events")
-
-Rel(appenderControl, appender, "Invokes")
-
-Rel(appender, layout, "Formats messages using")
+Rel(logEvent, loggerConfig, "Processed by [Java Method Calls]")
 
 
-Rel(pluginManager, appender, "Loads plugins")
+Rel(loggerConfig, filter, "Applies filters [Java Method Calls]")
 
-Rel(pluginManager, layout, "Loads plugins")
+Rel(loggerConfig, asyncLogger, "Delegates async processing [LMAX Disruptor]")
 
-Rel(pluginManager, filter, "Loads plugins")
+Rel(asyncLogger, appenderControl, "Dispatches async events [LMAX Disruptor]")
 
+Rel(loggerConfig, appenderControl, "Delegates events [Java Method Calls]")
 
-Rel(slf4jApi, slf4jAdapter, "Uses")
+Rel(appenderControl, appender, "Invokes [Java Method Calls]")
 
-Rel(slf4jAdapter, logger, "Forwards log events")
-
-Rel(julApi, julAdapter, "Uses")
-
-Rel(julAdapter, logger, "Redirects log events")
+Rel(appender, layout, "Formats messages using [Java Method Calls]")
 
 
-Rel(appender, fileSystem, "Writes log files")
+Rel(pluginManager, appender, "Loads plugins [Java Method Calls]")
 
-Rel(appender, console, "Prints logs")
+Rel(pluginManager, layout, "Loads plugins [Java Method Calls]")
 
-Rel(appender, remoteSystems, "Sends remote logs")
+Rel(pluginManager, filter, "Loads plugins [Java Method Calls]")
+
+
+Rel(slf4jApi, slf4jAdapter, "Uses [SLF4J API]")
+
+Rel(slf4jAdapter, logger, "Routes logging calls [Java Method Calls]")
+
+Rel(julApi, julAdapter, "Uses [java.util.logging API]")
+
+Rel(julAdapter, logger, "Routes logging calls [Java Method Calls]")
+
+
+Rel(appender, fileSystem, "Writes log files [File I/O]")
+
+Rel(appender, console, "Prints logs [Standard Output]")
+
+Rel(appender, remoteSystems, "Sends remote logs [Network I/O]")
 
 
 ' API on top
