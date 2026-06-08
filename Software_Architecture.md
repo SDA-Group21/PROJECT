@@ -19,32 +19,26 @@ document is describe the software architecture of the system using the C4 model 
 
 ## 1. Tooling
 
-The diagrams were created using PlantUML and the C4-PlantUML library.
-This approach made the diagrams easier to modify and maintain during the analysis process.
-
-Using diagrams as code was especially useful because the architecture model changed several times while we were deciding how to define the system boundaries and abstraction levels. With PlantUML, the diagrams can be reviewed and versioned directly in the repository instead of being maintained as separate manually edited images.
-
 The Context, Container, and Component diagrams are located in the [architecture](architecture) directory:
 
-- [context.puml](architecture/context.puml)
-- [container.puml](architecture/container.puml)
-- [component.puml](architecture/component.puml) (the unified component-level diagram)
-- [component-core.puml](architecture/component-core.puml) (deprecated; kept for historical reference)
-- [component-api.puml](architecture/component-api.puml) (deprecated; kept for historical reference)
-
+- [context.jpg](architecture/context.jpg)
+- [container.jpg](architecture/container.jpg)
+- [component.jpg](architecture/component.jpg)
 
 We did not try to describe every module in the Apache Log4j2 repository because the project is significantly larger than the part relevant for this analysis. Instead, we focused mainly on the logging pipeline and especially on the separation between `log4j-api` and `log4j-core`, since this boundary represents the central architectural idea of the framework: application code interacts with the API, while the actual logging implementation and runtime processing are handled inside Core.
 
 ## 2. Context Level
 
-The [Context diagram](architecture/context.puml) shows how Apache Log4j2 interacts with external applications, facade interfaces, and logging targets.
+The [Context diagram](architecture/context.jpg) shows how Apache Log4j2 interacts with external applications, facade interfaces, and logging targets.
 
 In the diagram, Log4j2 is a black box. The main systems interacting with it are:
+
 - A standard Java application invoking the Log4j2 API directly.
 - The SLF4J API, routing its logging calls through the Log4j2 engine.
 - The java.util.logging API, also redirecting its events to Log4j2.
 
 On the output side, the framework translates these calls into writes to three external targets:
+
 - The File System, using File I/O.
 - The Console, using Standard Output.
 - Remote Logging Systems, using Network I/O.
@@ -55,7 +49,7 @@ This setup highlights the main architectural role of the framework: keeping logg
 
 ## 3. Container Level
 
-The [Container diagram](architecture/container.puml) shows the modular structure of Apache Log4j2. The framework consists of four primary containers:
+The [Container diagram](architecture/container.jpg) shows the modular structure of Apache Log4j2. The framework consists of four primary containers:
 
 - `log4j-api`: The public logging interface. Applications use this module directly to manage loggers, markers, levels, and context.
 - `log4j-core`: The central logging engine. It processes log events, checks configurations, runs filters, formats messages, and writes the output.
@@ -63,6 +57,7 @@ The [Container diagram](architecture/container.puml) shows the modular structure
 - `log4j-jul`: A bridge that routes standard `java.util.logging` events into Log4j2 API calls.
 
 This design decouples client applications from the concrete engine. The runtime flow follows a clear hierarchy:
+
 1. Applications or external facades initiate a logging call.
 2. Bridge modules (`log4j-slf4j2-impl` or `log4j-jul`) forward facade calls to `log4j-api` using method calls.
 3. The `log4j-api` container routes these requests to `log4j-core` using method calls.
@@ -76,34 +71,34 @@ Still, there is one clear similarity. Application code depends on `log4j-api`, n
 
 ## 4. Component Level
 
-The unified [component.puml](architecture/component.puml) diagram details the internal elements of both the API and Core modules, along with the bridge adapters. The older, separate diagrams [component-api.puml](architecture/component-api.puml) and [component-core.puml](architecture/component-core.puml) are deprecated and kept only for historical reference.
+The unified [Component diagram](architecture/component.jpg) diagram details the internal elements of both the API and Core modules, along with the bridge adapters.
 
 ### Components
 
 The architecture relies on several primary components across the different modules:
 
-*   **log4j-api components**:
-    *   `LogManager`: The entry point for applications to look up and retrieve logger instances.
-    *   `Logger`: The primary interface that applications interact with for logging calls.
-    *   `ExtendedLogger`: An internal API extension that coordinates log event creation and hands off processing to the core module.
-    *   `Message`: Encapsulates message data and formats.
-    *   `Level`: Represents the severity of the log event.
-    *   `Marker`: Allows tagging log statements for group filtering.
-    *   `ThreadContext`: Stores context data bound to the current execution thread.
-*   **log4j-core components**:
-    *   `LoggerContext`: Manages the overall logging state and references the active configuration.
-    *   `Configuration`: Houses the rules, filters, appenders, layouts, and plugins currently active.
-    *   `LogEvent`: A container object wrapping all relevant context, payload, and thread data.
-    *   `LoggerConfig`: The central coordinator in the core module that routes events based on configuration rules.
-    *   `Filter`: Evaluates whether a log event should be written or discarded.
-    *   `AsyncLogger`: Implements asynchronous execution using the LMAX Disruptor queue.
-    *   `AppenderControl`: Manages thread safety and coordinates sending events to appenders.
-    *   `Appender`: The component responsible for writing log messages to specific external channels.
-    *   `Layout`: Transforms log events into text or binary formats before writing.
-    *   `PluginManager`: Discovers and dynamically loads custom appenders, filters, and layouts.
-*   **Bridge components**:
-    *   `SLF4J Adapter` (in `log4j-slf4j2-impl`): Intercepts SLF4J API logs and forwards them to the Log4j2 `Logger`.
-    *   `JUL Adapter` (in `log4j-jul`): Intercepts JDK standard logs and redirects them to the Log4j2 `Logger`.
+- **log4j-api components**:
+  - `LogManager`: The entry point for applications to look up and retrieve logger instances.
+  - `Logger`: The primary interface that applications interact with for logging calls.
+  - `ExtendedLogger`: An internal API extension that coordinates log event creation and hands off processing to the core module.
+  - `Message`: Encapsulates message data and formats.
+  - `Level`: Represents the severity of the log event.
+  - `Marker`: Allows tagging log statements for group filtering.
+  - `ThreadContext`: Stores context data bound to the current execution thread.
+- **log4j-core components**:
+  - `LoggerContext`: Manages the overall logging state and references the active configuration.
+  - `Configuration`: Houses the rules, filters, appenders, layouts, and plugins currently active.
+  - `LogEvent`: A container object wrapping all relevant context, payload, and thread data.
+  - `LoggerConfig`: The central coordinator in the core module that routes events based on configuration rules.
+  - `Filter`: Evaluates whether a log event should be written or discarded.
+  - `AsyncLogger`: Implements asynchronous execution using the LMAX Disruptor queue.
+  - `AppenderControl`: Manages thread safety and coordinates sending events to appenders.
+  - `Appender`: The component responsible for writing log messages to specific external channels.
+  - `Layout`: Transforms log events into text or binary formats before writing.
+  - `PluginManager`: Discovers and dynamically loads custom appenders, filters, and layouts.
+- **Bridge components**:
+  - `SLF4J Adapter` (in `log4j-slf4j2-impl`): Intercepts SLF4J API logs and forwards them to the Log4j2 `Logger`.
+  - `JUL Adapter` (in `log4j-jul`): Intercepts JDK standard logs and redirects them to the Log4j2 `Logger`.
 
 ### Execution Flow
 
@@ -114,8 +109,8 @@ The logging pipeline flows across the API-to-Core boundary in a sequence of step
 3.  **Boundary Handoff**: The `Logger` delegates to `ExtendedLogger`, which passes the `LogEvent` to the core module's `LoggerConfig`.
 4.  **Configuration & Filtering**: `LoggerConfig` retrieves configuration settings from the active `Configuration` (obtained via `LoggerContext`) and runs any specified `Filter` checks.
 5.  **Dispatching**:
-    *   *Synchronous*: `LoggerConfig` passes the event directly to `AppenderControl`.
-    *   *Asynchronous*: `LoggerConfig` hands the event to `AsyncLogger`. The LMAX Disruptor processes it on a separate thread and then dispatches it to `AppenderControl`.
+    - _Synchronous_: `LoggerConfig` passes the event directly to `AppenderControl`.
+    - _Asynchronous_: `LoggerConfig` hands the event to `AsyncLogger`. The LMAX Disruptor processes it on a separate thread and then dispatches it to `AppenderControl`.
 6.  **Formatting & Write**: `AppenderControl` invokes the appropriate `Appender`. The appender uses a `Layout` to format the message and writes the output to the destination.
 
 ### SOLID principles

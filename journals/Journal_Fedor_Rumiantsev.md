@@ -29,3 +29,7 @@ Reviewed the new C4 diagrams from Srbuhi Danielyan. They match the abstraction l
 ### 07.06.2026
 
 Updated Software_Architecture.md with the final diagrams. Rewrote the C4 level descriptions, added the flow details for bridge modules, and linked the relative diagram paths.
+
+### 08.06.2026
+
+Uploaded diagrams as JPG images. Updated links to the diagrams in Software_Architecture.md.
