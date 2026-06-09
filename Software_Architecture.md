@@ -1,12 +1,5 @@
 # Report: Software Architecture
 
-**Note** Max 2500 words except diagrams. The goal of this
-document is describe the software architecture of the system using the C4 model (levl 1, 2 and 3).
-
-**After the word limit, teachers reserve the right to stop reading, which may affect the teams' grade**
-
----
-
 ## Table of Contents
 
 - [Report: Software Architecture](#report-software-architecture)
@@ -14,7 +7,11 @@ document is describe the software architecture of the system using the C4 model 
   - [1. Tooling](#1-tooling)
   - [2. Context Level](#2-context-level)
   - [3. Container Level](#3-container-level)
+    - [Clean architecture relationship](#clean-architecture-relationship)
   - [4. Component Level](#4-component-level)
+    - [Components](#components)
+    - [Execution Flow](#execution-flow)
+    - [SOLID principles](#solid-principles)
   - [5. Architectural Characteristics](#5-architectural-characteristics)
 
 ## 1. Tooling
