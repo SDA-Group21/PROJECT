@@ -1,0 +1,55 @@
+@startuml
+
+' DEPRECATED:
+' This is the first version of the log4j-api component diagram.
+' It is kept in the repository for history, but it is no longer the main component diagram.
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_TOP_DOWN()
+
+title [DEPRECATED] Apache Log4j2 - log4j-api Component Diagram - First Version
+
+System_Boundary(api, "log4j-api") {
+
+```
+Component(logManager, "LogManager", "Java", "Entry point used to retrieve loggers")
+
+Component(logger, "Logger", "Java", "Main logging interface used by applications")
+
+Component(message, "Message", "Java", "Represents structured log messages")
+
+Component(level, "Level", "Java", "Represents logging severity levels")
+
+Component(marker, "Marker", "Java", "Adds metadata for filtering and categorization")
+
+Component(threadContext, "ThreadContext", "Java", "Stores contextual thread-related logging data")
+
+Component(extendedLogger, "ExtendedLogger", "Java", "Extended internal logging abstraction")
+```
+
+}
+
+Rel(logManager, logger, "Provides")
+
+Rel(logger, extendedLogger, "Delegates advanced operations")
+
+Rel(logger, message, "Creates messages")
+
+Rel(logger, level, "Uses")
+
+Rel(logger, marker, "Uses")
+
+Rel(logger, threadContext, "Reads context")
+
+Lay_D(logManager, logger)
+
+Lay_L(message, logger)
+Lay_R(level, logger)
+
+Lay_D(extendedLogger, logger)
+
+Lay_L(marker, extendedLogger)
+Lay_R(threadContext, extendedLogger)
+
+@enduml
